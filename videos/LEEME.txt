@@ -1,0 +1,33 @@
+CARPETA DE VÍDEOS · Taller de Atonalidad (Unidad 3)
+===================================================
+
+Estos siete archivos son recortes de un minuto sacados de tus vídeos
+de "VÍDEOS 2GP / UNIDAD 3". Se cortaron SIN recomprimir, así que
+conservan exactamente la calidad del original del que salieron.
+
+   pierrot.mp4                Pierrot lunaire · Schoenberg   (desde 0:52)
+   catcerto.mp4               CATcerto · Nora the Piano Cat  (desde 0:34)
+   helicopteros.mp4           Helicopter String Quartet      (desde 0:18)
+   sequenza-iii.mp4           Sequenza III · Berio           (desde 0:25)
+   serialismo-integral.mp4    Serialismo integral · TP        (desde 1:18)
+   serialismo-ejercicio.mp4   Serialismo integral · ejercicio (completo)
+   metastasis.mp4             Metastasis · vista espectral   (desde 0:08)
+   imaginary-landscape-4.mp4  Imaginary Landscape N.4 · Cage (desde 1:53)
+   pithoprakta.mp4            Pithoprakta · partitura gráfica (desde 0:35)
+
+Están los nueve. Si quieres añadir otro ejemplo, dime cuál y te digo
+qué nombre ponerle.
+
+--------------------------------------------------------------------
+MODO AULA
+--------------------------------------------------------------------
+Dentro de la ventana de vídeo hay un botón "Modo aula". Actívalo en
+el ordenador de clase y ese ordenador NUNCA incrustará YouTube, así
+que no puede salirte un anuncio en la pantalla.
+
+--------------------------------------------------------------------
+CAMBIAR UN RECORTE
+--------------------------------------------------------------------
+Sustituye el archivo por otro con el mismo nombre. Si lo exportas tú,
+acuérdate de marcar "Web Optimized" en HandBrake (o -movflags
++faststart en ffmpeg) para que empiece a verse enseguida.
