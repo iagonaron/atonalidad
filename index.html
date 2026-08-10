@@ -1,0 +1,3016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Taller de Atonalidad · Unidad 3</title>
+<meta name="theme-color" content="#08070E">
+<meta name="description" content="Taller de Atonalidad. Tonalidad y atonalidad, aleatoriedad en la creación y en la interpretación, composición libre, serialismo y música estocástica. Unidad 3.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Atonalidad">
+<style>
+  :root{
+    --ink:#08070E; --ink2:#0F0D18; --steel:#8B93A6; --steel-hi:#E8EAF6;
+    --amber:#F5C264; --paper:#D6D8E6; --dim:#7C8098;
+    --scope:#4FC8F5; --cian:#4FC8F5; --red:#D24A32; --rule:rgba(140,140,180,.24);
+    --ok:#5FD9A8;
+    --viol:#B98CF5; --viol2:#8B5FD6; --viol-d:#2A1E42;
+    --disp:"Futura","Avenir Next Condensed","Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --body:"Avenir Next","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --num:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --fs:12px; --pad:14px; --bh:44px;
+  }
+  @media (min-width:1300px){ :root{--fs:13px;--pad:17px;--bh:48px} }
+  @media (min-width:1750px){ :root{--fs:14.5px;--pad:20px;--bh:54px} }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;background:#05040A;color:var(--paper);
+    font-family:var(--body);font-size:var(--fs);overflow:hidden}
+  body{background-image:
+    radial-gradient(circle at 50% 30%,rgba(130,100,200,.15),transparent 58%),
+    repeating-radial-gradient(circle at 50% 30%,rgba(190,175,235,.026) 0 1.5px,transparent 1.5px 54px),
+    repeating-linear-gradient(90deg,rgba(185,140,245,.016) 0 1px,transparent 1px 68px),
+    repeating-linear-gradient(0deg,rgba(185,140,245,.016) 0 1px,transparent 1px 68px),
+    linear-gradient(180deg,#0B0913,#05040A 70%)}
+  canvas{display:block;touch-action:none}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#252036;border-radius:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ── cabecera y pestañas ── */
+  #top{position:fixed;top:0;left:0;right:0;z-index:10;
+    background:linear-gradient(180deg,#161327,#0A0812);border-bottom:1px solid rgba(160,150,210,.16);
+    display:flex;align-items:stretch;gap:var(--pad);padding:calc(var(--pad)*.5) var(--pad);
+    box-shadow:0 10px 34px rgba(0,0,0,.75),0 1px 0 rgba(200,190,240,.10) inset}
+  #brand{display:flex;flex-direction:column;justify-content:center;flex:none;padding-right:var(--pad);
+    border-right:1px solid var(--rule)}
+  #brand h1{margin:0;font-family:var(--disp);font-size:calc(var(--fs)*1.15);letter-spacing:.19em;
+    text-transform:uppercase;font-weight:600;white-space:nowrap;
+    background:linear-gradient(180deg,#F7F4FF,#A99FC0 46%,#E9E4F6);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  #brand p{margin:2px 0 0;font-family:var(--disp);font-size:calc(var(--fs)*.7);letter-spacing:.17em;
+    text-transform:uppercase;color:var(--viol);white-space:nowrap}
+  #tabs{display:flex;gap:6px;align-items:center;flex:1;flex-wrap:wrap}
+  .tab{cursor:pointer;border:1px solid var(--rule);border-radius:3px;background:linear-gradient(180deg,#1D1930,#0F0C18);
+    color:var(--dim);font-family:var(--disp);font-size:calc(var(--fs)*.86);letter-spacing:.14em;
+    text-transform:uppercase;padding:0 calc(var(--pad)*.95);height:var(--bh);
+    display:inline-flex;align-items:center;gap:8px;transition:.18s}
+  .tab i{font-style:normal;font-family:var(--num);font-size:calc(var(--fs)*.78);
+    width:1.9em;height:1.9em;border-radius:50%;border:1px solid var(--rule);
+    display:inline-flex;align-items:center;justify-content:center}
+  .tab:hover{color:var(--paper);border-color:var(--steel)}
+  .tab.on{background:linear-gradient(180deg,#C9A6F8,#8B5FD6);color:#170F26;border-color:var(--viol);font-weight:600;
+    box-shadow:0 0 22px rgba(185,140,245,.32)}
+  .tab.on i{border-color:rgba(23,15,38,.5);color:#170F26}
+
+  /* ── contenido ── */
+  #main{position:fixed;top:0;left:0;right:0;bottom:0;overflow:auto;padding:calc(var(--pad)*7) var(--pad) calc(var(--pad)*4)}
+  .view{display:none;max-width:1500px;margin:0 auto}
+  .view.on{display:block}
+
+  h2.sec{font-family:var(--disp);font-size:calc(var(--fs)*1.55);letter-spacing:.13em;text-transform:uppercase;
+    color:var(--steel-hi);margin:0 0 calc(var(--pad)*.4);font-weight:600}
+  p.lede{margin:0 0 var(--pad);color:#B4B6CC;line-height:1.6;max-width:80ch;font-size:calc(var(--fs)*1.08)}
+  .card{background:linear-gradient(180deg,rgba(25,22,40,.92),rgba(12,10,20,.92));
+    border:1px solid rgba(140,135,185,.16);border-radius:5px;
+    padding:var(--pad);margin-bottom:var(--pad);
+    box-shadow:0 14px 40px rgba(0,0,0,.55),0 1px 0 rgba(200,190,240,.07) inset}
+  .card.viol{border-color:rgba(185,140,245,.34);box-shadow:0 0 34px rgba(139,95,214,.14),0 14px 40px rgba(0,0,0,.55)}
+  .card > h3{margin:0 0 calc(var(--pad)*.6);font-family:var(--disp);font-size:calc(var(--fs)*.88);
+    letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+  .card > h3 .n{color:var(--dim);margin-right:8px}
+  .card > h3.v{color:var(--viol)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--pad)}
+  .grid2b{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--pad)}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--pad)}
+  @media (max-width:1050px){ .grid2,.grid2b{grid-template-columns:1fr} }
+  .txt{color:#B4B6CC;line-height:1.62}
+  .txt b{color:var(--cian);font-weight:600}
+  .txt em{color:var(--amber);font-style:normal;font-weight:600}
+  .txt u{color:var(--viol);text-decoration:none;font-weight:600}
+  .txt p{margin:0 0 10px}
+  .txt p:last-child{margin-bottom:0}
+  .note{font-size:calc(var(--fs)*.92);color:var(--dim);line-height:1.55}
+  .note b{color:var(--cian)} .note em{color:var(--amber);font-style:normal} .note u{color:var(--viol);text-decoration:none}
+
+  /* ── botones y mandos ── */
+  .btn{cursor:pointer;border:1px solid rgba(18,16,26,.85);border-radius:3px;height:var(--bh);
+    padding:0 calc(var(--pad)*.9);font-family:var(--disp);font-size:calc(var(--fs)*.85);
+    letter-spacing:.13em;text-transform:uppercase;color:#161422;
+    background:linear-gradient(176deg,#989AAB,#D6D8E6 24%,#8C8E9F 56%,#BABCCB);
+    box-shadow:0 1px 0 rgba(252,250,255,.65) inset,0 -1px 2px rgba(0,0,0,.5) inset,0 4px 12px rgba(0,0,0,.5);
+    text-shadow:0 1px 0 rgba(252,250,255,.5);display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    transition:transform .07s,filter .15s}
+  .btn:active{transform:translateY(1px);filter:brightness(1.1)}
+  .btn:disabled,.btn[disabled]{filter:grayscale(.85) brightness(.55);cursor:default;pointer-events:none}
+  .btn.on{background:linear-gradient(176deg,#8E2B1C,#D24A32 42%,#7C2415);color:#FFE7DC;
+    text-shadow:0 1px 0 rgba(0,0,0,.45);box-shadow:0 0 18px rgba(210,74,50,.28),0 4px 12px rgba(0,0,0,.5)}
+  .btn.go{background:linear-gradient(176deg,#3A2160,#4B2C7A 42%,#26154A);color:#EADCFF;
+    text-shadow:0 1px 0 rgba(0,0,0,.5);border-color:rgba(185,140,245,.38);
+    box-shadow:0 0 18px rgba(185,140,245,.20),0 1px 0 rgba(210,180,255,.28) inset,0 4px 12px rgba(0,0,0,.5)}
+  .btn.go:hover{filter:brightness(1.18)}
+  .btn.amb{background:linear-gradient(176deg,#5C4416,#7A5A1D 42%,#3D2C0D);color:#FFEFC9;
+    text-shadow:0 1px 0 rgba(0,0,0,.5);border-color:rgba(245,194,100,.36);
+    box-shadow:0 0 18px rgba(245,194,100,.18),0 1px 0 rgba(255,225,160,.24) inset,0 4px 12px rgba(0,0,0,.5)}
+  .btn.sel{background:linear-gradient(176deg,#C9A6F8,#8B5FD6);color:#170F26;font-weight:600;
+    border-color:var(--viol);text-shadow:none;box-shadow:0 0 20px rgba(185,140,245,.34),0 4px 12px rgba(0,0,0,.5)}
+  .btn.ghost{background:none;border:1px solid var(--rule);color:var(--dim);box-shadow:none;text-shadow:none;
+    font-family:var(--body);text-transform:none;letter-spacing:.01em;height:calc(var(--bh)*.78)}
+  .btn.ghost:hover{color:var(--viol);border-color:var(--steel)}
+  .btn.ghost.on{background:rgba(185,140,245,.14);color:var(--viol);border-color:var(--viol)}
+  .btn.sm{height:calc(var(--bh)*.78);font-size:calc(var(--fs)*.78);padding:0 calc(var(--pad)*.7)}
+  .btn.xs{height:calc(var(--bh)*.62);font-size:calc(var(--fs)*.72);padding:0 calc(var(--pad)*.55)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .row.mt{margin-top:calc(var(--pad)*.7)}
+  .row.sb{justify-content:space-between}
+  .hide{display:none!important}
+  .sp{flex:1}
+
+  label.ctl{display:block;margin:0 0 calc(var(--pad)*.8)}
+  label.ctl .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:10px}
+  label.ctl .name{font-size:calc(var(--fs)*1.0);color:var(--paper)}
+  label.ctl .val{font-family:var(--num);font-size:calc(var(--fs)*.92);color:var(--amber);text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,#7C7D99,#1E1B2B)}
+  input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:linear-gradient(90deg,#7C7D99,#1E1B2B)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:28px;margin-top:-12px;border-radius:2px;
+    background:repeating-linear-gradient(90deg,#EFECF9 0 1px,#84869B 1px 4px);border:1px solid #08070C;box-shadow:0 2px 6px rgba(0,0,0,.7)}
+  input[type=range]::-moz-range-thumb{width:20px;height:28px;border-radius:2px;background:#9698AC;border:1px solid #12101A}
+  textarea.esc{width:100%;min-height:96px;resize:vertical;background:#0A0812;color:var(--paper);
+    border:1px solid var(--rule);border-radius:4px;padding:10px 12px;font-family:var(--body);
+    font-size:calc(var(--fs)*1.02);line-height:1.5}
+  textarea.esc:focus{outline:2px solid var(--viol);outline-offset:1px}
+  select.sel{background:#141122;color:var(--paper);border:1px solid var(--rule);border-radius:3px;
+    height:calc(var(--bh)*.72);padding:0 8px;font-family:var(--body);font-size:calc(var(--fs)*.92)}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--viol);outline-offset:2px}
+
+  /* ── pantallas ── */
+  .screen{background:#040309;border:1px solid rgba(185,140,245,.20);border-radius:4px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.7) inset,0 0 26px rgba(185,140,245,.08) inset,0 12px 30px rgba(0,0,0,.6);
+    position:relative;overflow:hidden}
+  .screen canvas{width:100%;height:auto;display:block}
+  .screen::after{content:'';position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.30) 2px 3px);opacity:.45}
+  .screen .lbl{position:absolute;top:7px;left:10px;font-family:var(--num);font-size:calc(var(--fs)*.78);
+    color:rgba(185,140,245,.75);letter-spacing:.1em;pointer-events:none;text-transform:uppercase}
+  .screen .lbl.r{left:auto;right:10px;color:rgba(245,194,100,.7)}
+  .paper{background:#F2F0EA;border:1px solid #171523;border-radius:3px;box-shadow:0 10px 26px rgba(0,0,0,.55)}
+  .paper canvas{width:100%;height:auto;display:block}
+
+  .pill{display:inline-block;padding:3px 9px;border-radius:99px;border:1px solid var(--rule);
+    font-family:var(--num);font-size:calc(var(--fs)*.82);color:var(--amber);white-space:nowrap}
+  .pill.v{color:var(--viol);border-color:rgba(185,140,245,.4)}
+  .pill.c{color:var(--cian);border-color:rgba(79,200,245,.35)}
+  .pill.big{font-size:calc(var(--fs)*1.25);padding:5px 13px}
+  .ok{color:var(--ok)} .bad{color:#FF7A5C}
+
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(147,150,180,.13)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--dim);font-size:calc(var(--fs)*.94)}
+  .kv .v{font-family:var(--num);color:var(--amber);font-size:calc(var(--fs)*.94)}
+
+  /* ── teclas cromáticas ── */
+  .doce{display:grid;grid-template-columns:repeat(12,1fr);gap:5px}
+  .nota{cursor:pointer;border:1px solid var(--rule);border-radius:4px;padding:9px 2px 8px;text-align:center;
+    background:linear-gradient(180deg,rgba(34,30,52,.8),rgba(14,12,22,.8));transition:.14s;
+    font-family:var(--disp);letter-spacing:.06em;font-size:calc(var(--fs)*.94);color:#C6C8DC;user-select:none}
+  .nota small{display:block;font-family:var(--num);font-size:calc(var(--fs)*.72);color:var(--dim);margin-top:3px}
+  .nota:hover{border-color:var(--steel);color:#fff}
+  .nota.on{background:linear-gradient(180deg,#C9A6F8,#8B5FD6);color:#160E24;border-color:var(--viol);font-weight:600;
+    box-shadow:0 0 18px rgba(185,140,245,.4)}
+  .nota.on small{color:rgba(22,14,36,.7)}
+  .nota.usada{opacity:.3;pointer-events:none}
+  .nota.suena{border-color:var(--amber);box-shadow:0 0 22px rgba(245,194,100,.55);transform:translateY(-2px)}
+  .nota.neg{background:linear-gradient(180deg,rgba(20,18,32,.95),rgba(8,7,14,.95));color:#9EA0B8}
+
+  /* ── teclado de piano ── */
+  .piano{position:relative;height:132px;user-select:none;margin:var(--pad) 0 0;touch-action:none;
+    background:linear-gradient(180deg,#191426,#0B0912);border:1px solid var(--rule);
+    border-radius:5px;padding:9px;box-shadow:0 8px 22px rgba(0,0,0,.5) inset}
+  .piano.activo{border-color:rgba(185,140,245,.5);box-shadow:0 0 22px rgba(139,95,214,.18),0 8px 22px rgba(0,0,0,.5) inset}
+  .piano .kw,.piano .kb{position:absolute;transition:background .09s,transform .09s;
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;
+    font-family:var(--num);font-size:12px;font-weight:600}
+  .piano .kw .num{color:#231F2E}
+  .piano .kb .num{color:#E4D8FA}
+  .piano .kw{top:9px;bottom:9px;border:1px solid #0C0913;border-radius:0 0 4px 4px;
+    background:linear-gradient(180deg,#F3F1F9,#D4D2E0 80%,#B5B3C4);box-shadow:0 3px 0 rgba(0,0,0,.5)}
+  .piano .kb{top:9px;height:58%;z-index:3;border-radius:0 0 3px 3px;border:1px solid #07050C;
+    background:linear-gradient(180deg,#2C2540,#0C0913 78%,#1A1526);box-shadow:0 3px 0 rgba(0,0,0,.65)}
+  .piano.activo .kw,.piano.activo .kb{cursor:pointer}
+  .piano .kw.suena{background:linear-gradient(180deg,#FFEBBE,#E2A63F);box-shadow:0 1px 0 rgba(0,0,0,.5)}
+  .piano .kb.suena{background:linear-gradient(180deg,#D8AE45,#7C5A12);box-shadow:0 1px 0 rgba(0,0,0,.6)}
+  .piano .kw.elegida{background:linear-gradient(180deg,#DCC4FB,#9A72DC)}
+  .piano .kb.elegida{background:linear-gradient(180deg,#9A72DC,#4B2E82)}
+  .piano .kw.acierto{background:linear-gradient(180deg,#BCF2DA,#3FB98A)}
+  .piano .kb.acierto{background:linear-gradient(180deg,#3FB98A,#1C6E51)}
+  .piano .et{position:absolute;bottom:12px;text-align:center;pointer-events:none;
+    font-family:var(--num);font-size:9px;color:rgba(30,26,44,.42)}
+
+  /* ── barras / histograma ── */
+  .barras{display:flex;gap:4px;align-items:flex-end;height:120px}
+  .bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .bcol .bar{width:100%;background:#100E1A;border:1px solid rgba(147,150,180,.18);position:relative;
+    border-radius:2px 2px 0 0;overflow:hidden;flex:1;min-height:2px}
+  .bcol .fill{position:absolute;left:0;right:0;bottom:0;height:0;transition:height .18s}
+  .bcol .bn{font-family:var(--num);font-size:calc(var(--fs)*.72);color:var(--dim)}
+
+  /* ── dado de doce caras ── */
+  #dado12,#dadoFig{width:100px;height:100px;flex:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,.65))}
+
+  /* ── radios ── */
+  .radios{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:1250px){.radios{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:820px){.radios{grid-template-columns:repeat(2,1fr)}}
+  .rad{border:1px solid var(--rule);border-radius:5px;padding:10px;
+    background:linear-gradient(180deg,#221D33,#0D0B16);transition:.18s}
+  .rad .rt{font-family:var(--disp);font-size:calc(var(--fs)*.68);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  .rad .rf{font-family:var(--disp);font-size:calc(var(--fs)*1.02);letter-spacing:.04em;color:var(--steel-hi);
+    margin:3px 0 1px;line-height:1.2}
+  .rad .rg{font-size:calc(var(--fs)*.82);color:var(--dim);margin-bottom:7px}
+  .rad .rbot{display:flex;align-items:center;gap:8px}
+  .rad .rbot .btn{flex:none;width:2.6em}
+  .rad input[type=range]{height:22px;flex:1}
+  .rad .luz{display:flex;align-items:center;gap:6px;margin-top:7px;
+    font-family:var(--num);font-size:calc(var(--fs)*.74);color:var(--dim)}
+  .rad .luz i{width:8px;height:8px;border-radius:50%;background:#2A2438;flex:none}
+  .rad.emite{border-color:var(--viol);box-shadow:0 0 18px rgba(185,140,245,.28)}
+  .rad.emite .luz i{background:#5FD9A8;box-shadow:0 0 8px #5FD9A8}
+  .rad.buscando .luz i{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .rad.mudo .luz i{background:#D24A32}
+
+  /* ── rejilla piano-roll ── */
+  .roll{position:relative;background:#07060D;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+  .roll canvas{width:100%;height:auto;display:block;cursor:crosshair}
+
+  /* ── matriz dodecafónica ── */
+  table.matriz{border-collapse:collapse;font-family:"Avenir Next",Helvetica,Arial,sans-serif;
+    font-size:11.5px;color:#1E1A2A;margin:0 auto}
+  table.matriz td,table.matriz th{border:1px solid #C6C2B8;padding:3px 5px;text-align:center;
+    min-width:2.9em;line-height:1.25}
+  table.matriz th{background:#E4E0D6;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap}
+  table.matriz th:hover{background:#D2CEC2}
+  table.matriz th sub{font-size:8.5px}
+  table.matriz td{background:#FAF8F2}
+  table.matriz tr.act td{background:#E7DCFA}
+  table.matriz td.act{background:#E7DCFA}
+  table.matriz th.act{background:#7A3FC6;color:#fff}
+  table.matriz td.diag{background:#F1EEE6}
+  table.matriz td.suena{background:#F5C264;font-weight:600}
+
+  /* ── teclado del constructor de series ── */
+  .piano.pserie{height:152px;max-width:620px;margin:var(--pad) auto 0}
+
+  /* ── familias del mapa ── */
+  .familias{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin-top:var(--pad)}
+  @media(max-width:1400px){.familias{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:900px){.familias{grid-template-columns:repeat(2,1fr)}}
+  .fam{border:1px solid rgba(140,135,185,.18);border-radius:5px;padding:10px;
+    background:linear-gradient(180deg,rgba(25,22,40,.9),rgba(12,10,20,.9));transition:.25s;opacity:.5;
+    display:flex;flex-direction:column;min-height:132px}
+  .fam h4{margin:0 0 5px;font-family:var(--disp);font-size:calc(var(--fs)*.80);letter-spacing:.09em;
+    text-transform:uppercase;color:var(--steel-hi);line-height:1.25}
+  .fam .fd{font-size:calc(var(--fs)*.86);color:#B4B6CC;line-height:1.42;flex:1}
+  .fam .fe{margin-top:6px;font-size:calc(var(--fs)*.78);color:var(--dim);font-style:italic;line-height:1.3}
+  .fam.on{opacity:1;border-color:var(--viol);box-shadow:0 0 30px rgba(139,95,214,.3)}
+  .fam.on h4{color:var(--viol)}
+  .fam.tonal.on{border-color:var(--amber);box-shadow:0 0 30px rgba(245,194,100,.26)}
+  .fam.tonal.on h4{color:var(--amber)}
+  #deciCaja{display:flex;flex-direction:column;min-height:100%;
+    background:linear-gradient(180deg,#12101E,#0A0812);border:1px solid rgba(185,140,245,.28);
+    border-radius:5px;padding:var(--pad)}
+  #deciCaja .pill{align-self:flex-start;font-size:calc(var(--fs)*1.18);padding:6px 14px}
+  #deciCaja .txt{margin:var(--pad) 0 0}
+  #deciCaja .note{margin:8px 0 var(--pad)}
+  #deciCaja .btn{align-self:flex-start}
+  .deciFila{margin-bottom:calc(var(--pad)*.7)}
+  .deciFila.oculta{display:none}
+  .deciFila .dq{font-size:calc(var(--fs)*.98);color:var(--paper);margin-bottom:5px}
+
+  /* ── tabla resumen ── */
+  table.res{width:100%;border-collapse:collapse;font-size:calc(var(--fs)*.95)}
+  table.res th{font-family:var(--disp);font-size:calc(var(--fs)*.76);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule);font-weight:600}
+  table.res td{padding:6px 8px;border-bottom:1px solid rgba(147,150,180,.12);vertical-align:top;color:#B4B6CC;line-height:1.45}
+  table.res td:first-child{font-family:var(--disp);letter-spacing:.1em;text-transform:uppercase;color:var(--viol);white-space:nowrap}
+  table.res tr.act td{background:rgba(185,140,245,.10)}
+
+  #toast{position:fixed;left:50%;bottom:calc(var(--pad)*1.6);transform:translate(-50%,10px);z-index:30;
+    background:#171327;border:1px solid var(--rule);border-left:3px solid var(--viol);
+    padding:calc(var(--pad)*.7) var(--pad);max-width:min(660px,86vw);line-height:1.5;color:#CBCADA;
+    box-shadow:0 14px 34px rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:.28s}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #toast b{color:var(--cian)} #toast em{color:var(--amber);font-style:normal;font-weight:600}
+  #toast u{color:var(--viol);text-decoration:none;font-weight:600}
+
+  /* ── sala de proyección ── */
+  #cine{position:fixed;inset:0;z-index:50;background:rgba(4,3,9,.92);
+    display:none;align-items:center;justify-content:center;padding:calc(var(--pad)*1.2)}
+  #cine.on{display:flex}
+  #cineBox{width:min(1180px,95vw);max-height:94vh;overflow:auto;
+    background:linear-gradient(180deg,#191530,#0B0916);
+    border:1px solid rgba(185,140,245,.34);border-radius:6px;
+    box-shadow:0 30px 90px rgba(0,0,0,.85);padding:var(--pad)}
+  #cineTit{font-family:var(--disp);font-size:calc(var(--fs)*1.2);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--steel-hi);margin:0}
+  #cineSub{font-family:var(--disp);font-size:calc(var(--fs)*.78);letter-spacing:.16em;text-transform:uppercase;
+    color:var(--viol);margin:3px 0 0}
+  /* la sala: el visor va contenido para que el 720p no se estire ni se pixele */
+  #cineSala{position:relative;margin-top:var(--pad);padding:calc(var(--pad)*1.1);border-radius:5px;
+    background:
+      radial-gradient(ellipse at 50% 0%,rgba(185,140,245,.13),transparent 62%),
+      repeating-linear-gradient(90deg,rgba(185,140,245,.035) 0 1px,transparent 1px 26px),
+      linear-gradient(180deg,#120F20,#08070E);
+    border:1px solid rgba(185,140,245,.16);
+    box-shadow:0 1px 0 rgba(200,190,240,.06) inset,0 18px 50px rgba(0,0,0,.55) inset}
+  #cineSala::before,#cineSala::after{content:'';position:absolute;width:26px;height:26px;pointer-events:none;
+    border-color:rgba(185,140,245,.45);border-style:solid}
+  #cineSala::before{top:8px;left:8px;border-width:1px 0 0 1px}
+  #cineSala::after{bottom:8px;right:8px;border-width:0 1px 1px 0}
+  #cineMarco{position:relative;background:#000;margin:0 auto;
+    width:min(100%,940px);
+    border:1px solid rgba(185,140,245,.30);border-radius:4px;aspect-ratio:16/9;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 6px rgba(8,7,14,.9),0 0 40px rgba(139,95,214,.20),0 22px 48px rgba(0,0,0,.7)}
+  #cineMarco video,#cineMarco iframe{width:100%;height:100%;border:0;display:block;background:#000;
+    image-rendering:auto}
+  #cineVacio{padding:calc(var(--pad)*1.4);text-align:center;color:var(--dim);line-height:1.6;max-width:56ch}
+  #cineVacio b{color:var(--cian)} #cineVacio u{color:var(--viol);text-decoration:none}
+  #cinePega{flex:1;min-width:220px;background:#0A0812;color:var(--paper);border:1px solid var(--rule);
+    border-radius:3px;height:calc(var(--bh)*.78);padding:0 10px;font-family:var(--body);font-size:calc(var(--fs)*.92)}
+  #cinePega:focus{outline:2px solid var(--viol);outline-offset:1px}
+  #boot{position:fixed;inset:0;z-index:40;
+    background:radial-gradient(circle at 50% 32%,rgba(130,100,200,.20),transparent 55%),
+      repeating-radial-gradient(circle at 50% 32%,rgba(190,175,235,.030) 0 1.5px,transparent 1.5px 54px),
+      linear-gradient(180deg,#0B0913,#040309);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--pad)*1.0);
+    text-align:center;padding:4vh 6vw;transition:opacity .5s;overflow:auto}
+  #boot canvas{display:block;filter:drop-shadow(0 18px 44px rgba(0,0,0,.75))}
+  #boot.gone{opacity:0;pointer-events:none}
+  #boot h1{font-family:var(--disp);font-size:clamp(24px,4.6vw,54px);letter-spacing:.11em;text-transform:uppercase;
+    margin:0;font-weight:600;
+    background:linear-gradient(180deg,#FDFBFF,#A99FC8 48%,#EEE9FA);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 26px rgba(160,120,240,.28))}
+  #boot h2{font-family:var(--disp);font-size:clamp(12px,2.1vw,21px);letter-spacing:.28em;text-transform:uppercase;
+    margin:0;color:var(--viol);font-weight:500}
+  #boot .lede{max-width:58ch;font-size:clamp(13px,1.4vw,19px);line-height:1.62;color:#AFB0C4;margin:0}
+  #boot .warn{font-size:calc(var(--fs)*.95);color:var(--dim);max-width:54ch;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <div id="brand">
+    <h1>Taller de Atonalidad</h1>
+    <p>Unidad 3 · Atonalidad y series</p>
+  </div>
+  <nav id="tabs">
+    <button class="tab on" data-v="gra"><i>1</i>Tonal / Atonal</button>
+    <button class="tab" data-v="ale"><i>2</i>Aleatoriedad</button>
+    <button class="tab" data-v="lib"><i>3</i>Composición libre</button>
+    <button class="tab" data-v="ser"><i>4</i>Serialismo</button>
+    <button class="tab" data-v="est"><i>5</i>Estocástica</button>
+    <button class="tab" data-v="mapa"><i>6</i>El mapa</button>
+  </nav>
+  <button class="btn ghost" id="pararTodoBtn" title="Parar cualquier sonido">■ Parar todo</button>
+</div>
+
+<div id="main">
+
+<!-- ═══════════════ 1 · TONAL / ATONAL ═══════════════ -->
+<section class="view on" id="v-gra">
+  <h2 class="sec">Tonal / Atonal</h2>
+  <p class="lede">Antes de lanzarnos a definir la atonalidad, conviene reflexionar sobre su opuesto, que nos resulta mucho más familiar. Así que empieza por ahí: intenta definir <em>Tonalidad</em> tú mismo.</p>
+
+  <div class="card">
+    <h3><span class="n">1.1</span> Escríbelo tú primero</h3>
+    <p class="note" style="margin:0 0 8px">Como en el libro: mejor a lápiz. ¿Qué es la <em>Tonalidad</em>?</p>
+    <textarea class="esc" id="defTon" placeholder="Tonalidad es…" style="max-width:760px"></textarea>
+    <div class="row mt">
+      <button class="btn sm go" id="btnDef">Revelar las definiciones</button>
+    </div>
+    <div id="defAto" class="hide" style="margin-top:var(--pad)">
+      <div class="grid2">
+        <div class="card" style="margin:0;border-color:rgba(245,194,100,.34)">
+          <h3 style="margin-bottom:8px">Tonalidad</h3>
+          <textarea class="esc" id="defTonTxt" style="min-height:132px">Sistema en el que unos grados pesan más que otros y funcionan como centro de gravedad: principalmente la tónica, y tras ella la dominante, la subdominante y la mediante (los grados del arpegio). De ahí nacen la tensión y el reposo, y por eso una frase «pide» terminar en un sitio concreto y no en otro.</textarea>
+        </div>
+        <div class="card viol" style="margin:0">
+          <h3 class="v" style="margin-bottom:8px">Atonalidad</h3>
+          <textarea class="esc" id="defAtoTxt" style="min-height:132px">Música que renuncia deliberadamente a ese centro. No hay tónica ni grados privilegiados y, por tanto, no hay tensión ni reposo: ningún sonido pide resolver en otro. Todo sonido tiene la misma jerarquía.</textarea>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Puedes reescribirlas con tu redacción de clase y proyectarlas.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">1.2</span> El test de la nota de reposo</h3>
+    <p class="txt" style="margin-bottom:var(--pad)">Suena una frase y se corta antes de terminar. <b>¿Qué nota pide para quedar en reposo?</b></p>
+    <div class="grid2">
+
+      <div class="card viol" style="margin:0">
+        <h3 class="v" style="margin-bottom:8px">Frase tonal</h3>
+        <div class="row">
+          <button class="btn go" id="testTonal">▶ Escuchar</button>
+          <button class="btn ghost" id="repeTonal" disabled>Repetir</button>
+        </div>
+        <div class="piano" id="pianoTonal"></div>
+        <p class="note" id="msgTonal" style="margin-top:10px">Pulsa <em>Escuchar</em> y después elige una tecla.</p>
+        <div id="okTonal" class="hide" style="margin-top:10px">
+          <div class="card" style="margin:0;background:#12101E;border-color:rgba(95,217,168,.35)">
+            <p class="txt" style="margin:0">Ahí está. No lo has razonado: te lo ha pedido el oído. Eso es la <em>gravedad tonal</em>, la sensación de que hay una nota que manda y todas las demás tiran hacia ella.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card viol" style="margin:0">
+        <h3 class="v" style="margin-bottom:8px">Frase atonal</h3>
+        <div class="row">
+          <button class="btn go" id="testAtonal">▶ Escuchar</button>
+          <button class="btn ghost" id="repeAtonal" disabled>Repetir</button>
+        </div>
+        <div class="piano" id="pianoAtonal"></div>
+        <p class="note" id="msgAtonal" style="margin-top:10px">Pulsa <em>Escuchar</em> y después elige una tecla.</p>
+        <div id="okAtonal" class="hide" style="margin-top:10px">
+          <div class="card" style="margin:0;background:#12101E;border-color:rgba(185,140,245,.35)">
+            <p class="txt" style="margin:0">Precisamente de eso se trata: <u>aquí no hay una nota de reposo</u>. Ninguna cierra más que otra, y por eso da igual cuál elijas. En eso consiste la atonalidad.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card viol">
+    <h3 class="v"><span class="n">1.3</span> El mando de la gravedad · de la tonalidad a la atonalidad, en vivo</h3>
+    <div class="grid2b">
+      <div>
+        <div class="screen">
+          <span class="lbl" id="lblCampo">Campo tonal · gravedad 100%</span>
+          <span class="lbl r" id="lblCentro">Centro: Do</span>
+          <canvas id="cvCampo" width="1000" height="520"></canvas>
+        </div>
+        <div class="row mt">
+          <button class="btn go" id="gravPlay">▶ Que la máquina componga</button>
+          <button class="btn ghost" id="gravReset">Vaciar el recuento</button>
+          <span class="sp"></span>
+          <span class="pill" id="gravNotas">0 notas</span>
+        </div>
+      </div>
+      <div>
+        <label class="ctl">
+          <span class="top"><span class="name">Gravedad tonal</span><span class="val" id="vGrav">100 % · tonal</span></span>
+          <input type="range" id="sGrav" min="0" max="100" step="1" value="100">
+          <span class="note">A la derecha, un imán en la tónica. A la izquierda, ninguno.</span>
+        </label>
+        <div class="row sb" style="margin:0 0 calc(var(--pad)*.8)">
+          <span class="name" style="color:var(--paper)">Centro tonal</span>
+          <span class="pill">Do · fijo</span>
+        </div>
+        <label class="ctl">
+          <span class="top"><span class="name">Velocidad</span><span class="val" id="vVel">2 notas/s</span></span>
+          <input type="range" id="sVel" min="1" max="6" step="1" value="2">
+        </label>
+        <p class="note" style="margin-bottom:8px">Cuántas veces ha sonado cada nota:</p>
+        <div class="barras" id="histo"></div>
+        <div class="row sb" style="margin-top:10px">
+          <span class="note">Reparto del protagonismo</span>
+          <span class="pill v" id="vReparto">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="txt" style="margin-top:var(--pad)">
+      <p><em>Con gravedad alta</em> la máquina cae una y otra vez en la tónica y sus satélites: el histograma se llena de picos, la música suena a algo, oyes un «hogar». <u>Con gravedad cero</u> el histograma se aplana, las doce notas salen por igual y desaparece la sensación de casa. No has cambiado las notas: has cambiado <b>quién manda</b>.</p>
+      <p class="note">Ese histograma plano es, literalmente, el objetivo del dodecafonismo que verás en la sección 4: «no hay forma más justa de repartir el protagonismo que coger los 12 sonidos y no repetir ninguno hasta que suenan los doce».</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">1.4</span> Tres puertas para salir de la tonalidad</h3>
+    <p class="txt" style="margin-bottom:10px">Una vez apagada la gravedad hay que decidir cómo organizarse. El libro plantea tres caminos, y esta app dedica una pestaña a cada uno:</p>
+    <table class="res">
+      <tr><th style="width:16%">Camino</th><th style="width:34%">En qué consiste</th><th>Quién decide</th></tr>
+      <tr><td>Aleatoriedad</td><td>Se meten factores de azar, al componer y/o al interpretar.</td><td>El azar: una vez, al crear; o en cada interpretación.</td></tr>
+      <tr><td>Composición libre</td><td>Decisiones particulares en obras particulares, sin azar y sin sistema.</td><td>El compositor, y solo él.</td></tr>
+      <tr><td>Serialismo</td><td>Un método riguroso que reparte parámetros musicales. Ej: el dodecafonismo.</td><td>La serie, una regla previa a la obra.</td></tr>
+    </table>
+    <p class="note" style="margin-top:10px">Y al final del recorrido, la <u>música estocástica</u>: azar, pero con las matemáticas de la probabilidad puestas a componer.</p>
+    <div class="row mt" style="align-items:center;gap:var(--pad)">
+      <button class="btn sm go vid" data-vid="pierrot">▶ ¿Y cómo suena de verdad?</button>
+      <span class="note" style="flex:1;min-width:16em"><em>Pierrot lunaire</em>, Schoenberg, 1912. Atonalidad libre, trece años antes de que inventara el método. Escúchalo justo después de dejar la gravedad a cero.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 2 · ALEATORIEDAD ═══════════════ -->
+<section class="view" id="v-ale">
+  <h2 class="sec">Aleatoriedad</h2>
+  <p class="lede">Incluir factores aleatorios propicia, como es lógico, el desorden. Y el azar puede entrar en <em>dos momentos distintos</em>: mientras se compone, o mientras se interpreta. Aquí tienes las dos máquinas, una al lado de la otra. Míralas y pregúntate cuál de las dos suena igual dos veces seguidas.</p>
+
+  <div class="grid2">
+    <!-- ── dados ── -->
+    <div class="card viol">
+      <h3 class="v"><span class="n">2.1</span> Azar en la creación · el dado compositor</h3>
+      <p class="txt" style="margin-bottom:10px">Dos dados. El de <em>doce</em> caras decide el sonido —1 es Do, 2 es Re♭, 3 es Re… y 12 es Si— y el de <em>seis</em> decide la figura. El compositor tira, apunta lo que sale y así construye la obra: altura y ritmo, los dos al azar. Cuando termina, <b>la obra ya está escrita</b>.</p>
+      <div class="row" style="align-items:center;gap:var(--pad)">
+        <canvas id="dado12" width="208" height="208"></canvas>
+        <canvas id="dadoFig" width="208" height="208"></canvas>
+        <div style="flex:1;min-width:150px">
+          <div class="kv"><span class="k">Ha salido</span><span class="v" id="dSuma">—</span></div>
+          <div class="kv"><span class="k">Sonido asignado</span><span class="v" id="dNota">—</span></div>
+          <div class="kv"><span class="k">Figura</span><span class="v" id="dFig">—</span></div>
+          <div class="kv"><span class="k">Notas escritas</span><span class="v" id="dCuenta">0 / 10</span></div>
+        </div>
+      </div>
+      <div class="row mt">
+        <button class="btn go" id="dTira">🎲 Tirar los dados</button>
+        <button class="btn ghost" id="dAuto">Componer la obra entera</button>
+        <button class="btn ghost" id="dNueva">Empezar de cero</button>
+      </div>
+      <div class="paper" style="margin-top:var(--pad)"><canvas id="cvDados"></canvas></div>
+      <div class="row mt">
+        <button class="btn amb" id="dPlay" disabled>▶ Interpretar</button>
+        <span class="sp"></span>
+        <span class="pill c" id="dHuella">obra —</span>
+      </div>
+      <p class="note" style="margin-top:9px" id="dMsg">Tira los dados. Si quieres otra correspondencia entre números y sonidos, puedes cambiarla abajo.</p>
+      <details style="margin-top:9px">
+        <summary class="note" style="cursor:pointer;color:var(--viol)">Cambiar la tabla de correspondencias</summary>
+        <div class="grid3" id="dTabla" style="margin-top:10px"></div>
+      </details>
+      <div class="card" style="margin:var(--pad) 0 0;background:#12101E">
+        <p class="note" style="margin:0"><em>Ejemplo curioso: Catcerto.</em> El compositor Mindaugas Piečaitis vio en internet a Nora, una gata que aporreaba el piano, y escribió alrededor de esa grabación un concierto para orquesta. La gata puso el azar; él lo fijó en una partitura. <b>La interpretación será siempre igual.</b></p>
+        <p class="note" style="margin:8px 0 0">Doscientos años antes, a Mozart se le atribuye un <u>juego de dados musical</u> que funcionaba exactamente como esta máquina.</p>
+        <div class="row mt"><button class="btn sm go vid" data-vid="catcerto">▶ Ver Catcerto</button></div>
+      </div>
+    </div>
+
+    <!-- ── radios ── -->
+    <div class="card viol">
+      <h3 class="v"><span class="n">2.2</span> Azar en la interpretación · las radios</h3>
+      <p class="txt" style="margin-bottom:10px">La partitura es <b>fija y detallada</b>: dice a qué frecuencia sintonizar y con cuánto volumen. Lo que no puede decir es <em>qué habrá ahí</em> cuando llegue el concierto. Cage lo hizo con doce radios y veinticuatro intérpretes. Enciéndelas y escucha qué hay hoy en cada frecuencia.</p>
+      <div class="row">
+        <button class="btn go" id="rTodas">▶ Interpretar</button>
+        <button class="btn ghost" id="rNuevas" title="Sortear otras frecuencias" style="font-size:calc(var(--fs)*1.3);padding:0 calc(var(--pad)*.9)">🎲</button>
+      </div>
+      <div class="radios" id="radios"></div>
+      <div class="card" style="margin:var(--pad) 0 0;background:#12101E">
+        <p class="note" style="margin:0">En el estreno, en Nueva York, la obra empezó tan tarde que casi ninguna emisora seguía emitiendo: el público oyó, sobre todo, silencio y ruido. Y era <b>exactamente lo que ponía la partitura</b>.</p>
+        <div class="row mt"><button class="btn sm go vid" data-vid="cage">▶ Ver Imaginary Landscape N.4</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">2.3</span> Las dos máquinas, cara a cara</h3>
+    <table class="res">
+      <tr><th style="width:22%"></th><th>Dado compositor</th><th>Doce radios</th></tr>
+      <tr><td>El azar entra…</td><td>al componer</td><td>al interpretar</td></tr>
+      <tr><td>La partitura…</td><td>nace del azar y luego queda fija</td><td>está totalmente escrita desde el principio</td></tr>
+      <tr><td>Dos interpretaciones…</td><td>suenan <b>igual</b></td><td>suenan <b>distintas</b></td></tr>
+      <tr><td>Ejemplo del libro</td><td>Catcerto</td><td>Imaginary Landscape N.4</td></tr>
+    </table>
+    <p class="note" style="margin-top:10px">La <u>música estocástica</u> (sección 5) es también azar en el momento de la creación: la diferencia es que ahí el azar no lo tira un dado, lo gobierna una ley matemática de probabilidad.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 · COMPOSICIÓN LIBRE ═══════════════ -->
+<section class="view" id="v-lib">
+  <h2 class="sec">Composición libre</h2>
+  <p class="lede">Aquí no hay mucho que explicar, y por eso es la sección más corta: el compositor simplemente toma decisiones particulares en obras particulares. Escapa de lo tonal <em>sin</em> elementos aleatorios y <em>sin</em> reglas claras. Ni dados ni series: criterio.</p>
+
+  <div class="grid2b">
+    <div class="card viol">
+      <h3 class="v"><span class="n">3.1</span> El lienzo · doce sonidos y ninguna regla</h3>
+      <p class="note" style="margin:0 0 10px">Pinta con el ratón (o el dedo) sobre la rejilla. Doce filas, doce sonidos. Nadie te va a corregir: eso es exactamente lo que significa «libre».</p>
+      <div class="roll"><canvas id="cvRoll" width="1100" height="480"></canvas></div>
+      <div class="row mt">
+        <button class="btn go" id="lPlay">▶ Escuchar</button>
+        <button class="btn ghost" id="lBorra">Borrar</button>
+        <button class="btn ghost" id="lAzar">Rellenar al azar</button>
+        <span class="sp"></span>
+        <label class="row" style="gap:6px"><span class="note">Timbre</span>
+          <select class="sel" id="lTimbre"><option value="cuerda">cuerda</option><option value="viento">viento</option><option value="campana">campana</option><option value="pizz">pizzicato</option></select>
+        </label>
+      </div>
+      <div class="row mt" style="gap:var(--pad)">
+        <span class="pill" id="lDistintas">0 sonidos distintos</span>
+        <span class="pill c" id="lRepes">0 repeticiones</span>
+        <span class="pill v" id="lVeredicto">—</span>
+      </div>
+      <p class="note" style="margin-top:9px" id="lMsg">Truco de clase: pide a un alumno que pinte «algo que no suene a nada» y luego mide con el detector si de verdad lo ha conseguido.</p>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3><span class="n">3.2</span> Un ejemplo turbio · <i>Sequenza III</i></h3>
+        <p class="txt">Luciano Berio, 1966, para voz femenina sola. La escribió para Cathy Berberian y en la partitura no hay melodía tonal ni serie: hay <b>instrucciones de estado de ánimo</b> —tenso, distante, soñador, urgente, jadeante— que la cantante recorre susurrando, riendo, murmurando y chasqueando la lengua.</p>
+        <p class="note">Ni azar ni reglas: decisiones. Ochenta y tantas indicaciones expresivas y una intérprete concreta en la cabeza del compositor.</p>
+        <div class="row mt" id="estados"></div>
+        <p class="note" style="margin-top:9px">Pulsa los estados para oír un gesto vocal sintético de cada uno. Es una caricatura, pero da la idea del salto entre uno y otro.</p>
+        <div class="row mt"><button class="btn sm go vid" data-vid="berio">▶ Ver Sequenza III</button></div>
+        <p class="note" style="margin-top:var(--pad)">Y si te parece poco: Stockhausen decidió un día que su cuarteto de cuerda se tocaría con cada intérprete dentro de <u>un helicóptero distinto</u>. Ni azar ni serie. Criterio.</p>
+        <div class="row mt"><button class="btn sm go vid" data-vid="helicopteros">▶ Ver el cuarteto de helicópteros</button></div>
+      </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ 4 · SERIALISMO ═══════════════ -->
+<section class="view" id="v-ser">
+  <h2 class="sec">Serialismo</h2>
+  <p class="lede">Aquí la cosa se pone seria, nunca mejor dicho. Un grupo de compositores encabezados por <em>Arnold Schoenberg</em> decidió crear un sistema meticuloso y robusto que dotara de <b>método</b> a la atonalidad. La técnica más conocida es el <u>dodecafonismo</u>: coger los doce sonidos de la escala cromática y no repetir ninguno hasta que hayan sonado los doce.</p>
+
+  <div class="card viol">
+    <h3 class="v"><span class="n">4.1</span> Dodecafonismo · construye tu serie P0</h3>
+    <p class="txt" style="margin-bottom:10px">Pulsa las teclas en el orden que quieras. Cada una se queda <b>encendida y numerada</b>, así que ves de un vistazo las que ya has gastado; y la máquina <b>no te deja repetir</b> ninguna hasta que hayan sonado las doce. Empiezas de cero: la serie la escribes tú.</p>
+    <div class="piano pserie" id="serPiano"></div>
+    <div class="row mt">
+      <button class="btn ghost" id="serDeshacer">← Quitar la última</button>
+      <button class="btn ghost" id="serVacia">Empezar de cero</button>
+      <button class="btn ghost" id="serLibro">Serie del libro</button>
+      <button class="btn ghost" id="serAzar">Serie al azar</button>
+      <span class="sp"></span>
+      <span class="pill v" id="serCuenta">12 / 12 sonidos</span>
+    </div>
+    <div class="paper" style="margin-top:var(--pad)"><canvas id="cvSerie"></canvas></div>
+    <div class="row mt">
+      <button class="btn go" id="serPlay">▶ Oír la serie</button>
+      <span class="sp"></span>
+      <span class="pill c" id="serHisto">reparto perfecto: 1 vez cada nota</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">4.2</span> Las cuatro formas · y las 48 variaciones</h3>
+    <div class="grid2b">
+      <div>
+        <div class="row" id="formaBtns" style="margin-bottom:calc(var(--pad)*.7)">
+          <button class="btn sm sel" data-f="P">P · principal</button>
+          <button class="btn sm" data-f="R">R · retrógrada</button>
+          <button class="btn sm" data-f="I">I · inversión</button>
+          <button class="btn sm" data-f="RI">RI · retrógrada invertida</button>
+        </div>
+        <div class="paper"><canvas id="cvForma"></canvas></div>
+        <label class="ctl" style="margin-top:var(--pad)">
+          <span class="top"><span class="name">Transposición · semitonos que le sumamos</span><span class="val" id="vTrans">0 · P0</span></span>
+          <input type="range" id="sTrans" min="0" max="11" step="1" value="0">
+        </label>
+        <div class="row">
+          <button class="btn go" id="formaPlay">▶ Escuchar</button>
+          <button class="btn ghost" id="formaComp">▶ Después de P0</button>
+          <button class="btn ghost" id="formaAnim">Ver la transformación</button>
+        </div>
+        <div class="card" style="margin:var(--pad) 0 0;background:#12101E">
+          <p class="note" style="margin:0" id="formaExpl"></p>
+        </div>
+      </div>
+      <div>
+        <p class="note" style="margin:0 0 8px">La <em>matriz</em>: las 48 variaciones en una cuadrícula. → las <b>P</b>, ← las <b>R</b>, ↓ las <b>I</b>, ↑ las <b>RI</b>. Pulsa una etiqueta para oírla.</p>
+        <div class="paper" style="padding:10px;overflow:auto"><table class="matriz" id="matriz"></table></div>
+        <div class="row mt sb">
+          <span class="note">4 formas × 12 transposiciones · y en el examen, a mano</span><span class="pill big v">48</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">4.3</span> Serialismo integral · seriarlo absolutamente todo</h3>
+    <p class="txt" style="margin-bottom:10px">A los dodecafónicos les criticaron ser «poco rigurosos»: seriaban con contundencia las <b>alturas</b>, pero los ritmos, los matices y las articulaciones los seguían usando de forma clásica. Así que hubo quien lo serió todo. Enciende y apaga los interruptores y <em>oye</em> la diferencia.</p>
+    <div class="grid3" id="integralSw"></div>
+    <div class="row mt">
+      <button class="btn go" id="intPlay">▶ Escuchar</button>
+      <button class="btn ghost" id="intSoloAlt">Solo alturas (dodecafonismo)</button>
+      <button class="btn ghost" id="intTodo">Todo seriado (integral)</button>
+      <button class="btn ghost" id="intBaraja">Barajar las series</button>
+    </div>
+    <div class="screen" style="margin-top:var(--pad)"><span class="lbl" id="intLbl">Dodecafonismo · solo alturas</span><canvas id="cvIntegral" width="1200" height="300"></canvas></div>
+    <p class="note" style="margin-top:9px">Cada nota que oyes en el serialismo integral tiene su altura, su duración, su intensidad y su timbre elegidos por una serie distinta. Bastante loco.</p>
+    <div class="row mt">
+      <button class="btn sm go vid" data-vid="serialint">▶ Oírlo de verdad</button>
+      <button class="btn sm go vid" data-vid="serialej">▶ Verlo sobre la partitura</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 5 · ESTOCÁSTICA ═══════════════ -->
+<section class="view" id="v-est">
+  <h2 class="sec">Música estocástica</h2>
+  <p class="lede">Está basada en procesos matemáticos de probabilidad y en el análisis. Se parte de <em>datos</em> y se les otorga una correspondencia con parámetros musicales. Aquí no se compone nota a nota: se compone la <u>nube</u>, y se deja que la ley matemática decida qué hace cada punto dentro de ella. El que lo llevó más lejos fue <b>Iannis Xenakis</b>, que además de compositor era ingeniero y arquitecto.</p>
+
+  <div class="card viol">
+    <h3 class="v"><span class="n">5.1</span> La piedra · el ejemplo del libro, de verdad</h3>
+    <p class="txt" style="margin-bottom:10px">Tomas una piedra del suelo y la analizas científicamente. A cada dato le asignas un elemento musical. La naturaleza de esa piedra define buena parte del resultado: <b>otra piedra, otra obra</b>.</p>
+    <div class="grid2b">
+      <div class="screen"><span class="lbl" id="piLbl">Piedra —</span><canvas id="cvPiedra" width="860" height="500"></canvas></div>
+      <div>
+        <div class="row">
+          <button class="btn ghost" id="piCoge">Coger otra piedra</button>
+          <button class="btn go" id="piAnaliza">Analizar</button>
+        </div>
+        <div id="piDatos" style="margin-top:var(--pad)"></div>
+        <div class="row mt">
+          <button class="btn amb" id="piSonar" disabled>▶ Escuchar</button>
+        </div>
+        <p class="note" style="margin-top:9px" id="piMsg">Coge una piedra y analízala. Después podrás cambiar a qué parámetro musical corresponde cada dato.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card viol">
+    <h3 class="v"><span class="n">5.2</span> El gas · <i>Pithoprakta</i>, o cómo suena la probabilidad</h3>
+    <p class="txt" style="margin-bottom:10px">Xenakis era ingeniero, y para <i>Pithoprakta</i> (1956) usó la <b>teoría cinética de los gases</b>: cada uno de los 46 instrumentos de cuerda es una molécula que se mueve al azar, y la ley de <em>Maxwell-Boltzmann</em> decide a qué velocidad. Sube la temperatura y las moléculas se agitan; el resultado no es ruido: es una <u>textura</u>.</p>
+    <div class="grid2b">
+      <div>
+        <div class="screen"><span class="lbl">Tiempo →  ·  ↑ Altura</span><span class="lbl r" id="gasLbl">46 moléculas</span><canvas id="cvGas" width="1100" height="480"></canvas></div>
+        <div class="row mt">
+          <button class="btn go" id="gasPlay">▶ Escuchar</button>
+        </div>
+      </div>
+      <div>
+        <label class="ctl">
+          <span class="top"><span class="name">Temperatura</span><span class="val" id="vGasT">media</span></span>
+          <input type="range" id="sGasT" min="1" max="100" step="1" value="35">
+          <span class="note">Cuanto más caliente, más rápido se mueve cada molécula: glissandi más largos y más agudos.</span>
+        </label>
+        <label class="ctl">
+          <span class="top"><span class="name">Número de moléculas</span><span class="val" id="vGasN">46 · las cuerdas de Pithoprakta</span></span>
+          <input type="range" id="sGasN" min="4" max="80" step="1" value="46">
+        </label>
+        <label class="ctl">
+          <span class="top"><span class="name">Registro de la nube</span><span class="val" id="vGasR">3 octavas</span></span>
+          <input type="range" id="sGasR" min="8" max="48" step="1" value="36">
+        </label>
+        <div class="card" style="margin:0;background:#12101E">
+          <p class="note" style="margin:0">Fíjate en <em>una sola molécula</em> —la ámbar—: su recorrido es <b>impredecible</b>. Fíjate en las ochenta a la vez: la nube tiene una <em>forma</em> clarísima, y esa forma es lo que compone Xenakis. Ahí está toda la idea de lo estocástico.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card viol">
+    <h3 class="v"><span class="n">5.3</span> La mesa de dibujo · <i>Metastasis</i> y las superficies regladas</h3>
+    <p class="txt" style="margin-bottom:10px">Dibuja <b>líneas rectas</b> sobre el plano: cada una es un glissando de una cuerda, y el conjunto forma una superficie curva hecha solo de rectas. Con esa idea Xenakis escribió <i>Metastasis</i> (1954, 61 músicos) y, con los mismos dibujos, diseñó junto a Le Corbusier el <b>Pabellón Philips</b> de la Expo de Bruselas del 58. La misma figura sirvió para una partitura y para un edificio.</p>
+    <div class="grid2b">
+      <div>
+        <div class="screen"><span class="lbl">Arrastra para trazar un glissando</span><span class="lbl r" id="mesaLbl">0 líneas</span><canvas id="cvMesa" width="1100" height="470"></canvas></div>
+        <div class="row mt">
+          <button class="btn go" id="mesaPlay">▶ Escuchar</button>
+          <button class="btn ghost" id="mesaBorra">Borrar</button>
+          <button class="btn ghost" id="mesaAbanico">Abanico de Metastasis</button>
+          <button class="btn ghost" id="mesaHaz">Superficie reglada</button>
+          <button class="btn ghost" id="mesaPab">Pabellón Philips</button>
+        </div>
+      </div>
+      <div>
+        <label class="ctl">
+          <span class="top"><span class="name">Grosor del trazo · cuántas cuerdas</span><span class="val" id="vMesaG">1 cuerda</span></span>
+          <input type="range" id="sMesaG" min="1" max="12" step="1" value="1">
+          <span class="note">Con el grosor alto, cada trazo suelta un haz de glissandi paralelos: eso es una masa de cuerdas.</span>
+        </label>
+        <label class="ctl">
+          <span class="top"><span class="name">Duración del dibujo</span><span class="val" id="vMesaD">8 s</span></span>
+          <input type="range" id="sMesaD" min="3" max="20" step="1" value="8">
+        </label>
+        <label class="ctl">
+          <span class="top"><span class="name">Intensidad del trazo</span><span class="val" id="vMesaI">mf</span></span>
+          <input type="range" id="sMesaI" min="0" max="100" step="1" value="55">
+          <span class="note">El color dice la intensidad, como en un mapa de temperatura: <span style="color:#7B6BE8">violeta</span> es <em>pp</em>, <span style="color:#4FC8F5">azul</span> es <em>p</em>, <span style="color:#F5C264">ámbar</span> es <em>f</em> y <span style="color:#FF5A3C">rojo</span> es <em>ff</em>. Cada trazo guarda la intensidad que tenía al dibujarlo.</span>
+        </label>
+        <div class="card" style="margin:0;background:#12101E">
+          <p class="note" style="margin:0"><em>Superficie reglada:</em> una superficie curva que puede construirse entera con líneas rectas. En música son glissandi; en arquitectura, cables tensos y hormigón. Pulsa «Superficie reglada» y verás cómo un montón de rectas dibujan una curva sin que ninguna se doble.</p>
+        </div>
+        <div class="row mt"><button class="btn sm go vid" data-vid="metastasis">▶ Ver Metastasis</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">5.4</span> La cuadrícula de la probabilidad · <i>Achorripsis</i></h3>
+    <div class="grid2b">
+      <div>
+        <p class="txt" style="margin-bottom:10px">En <i>Achorripsis</i> (1957) Xenakis dividió la obra en una cuadrícula: las columnas son trozos de tiempo, las filas son familias de timbre. Después dejó que la <b>ley de Poisson</b> —la misma que predice cuántas llamadas entran en una centralita— decidiera cuántos acontecimientos caen en cada casilla. Él eligió la <em>densidad media</em>; el resto lo puso la probabilidad.</p>
+        <div class="screen"><canvas id="cvPoisson" width="1100" height="300"></canvas></div>
+        <div class="row mt">
+          <button class="btn go" id="poiPlay">▶ Escuchar</button>
+          <button class="btn ghost" id="poiTira">Volver a repartir</button>
+        </div>
+      </div>
+      <div>
+        <label class="ctl">
+          <span class="top"><span class="name">Densidad media de acontecimientos</span><span class="val" id="vPoi">0,6 por casilla</span></span>
+          <input type="range" id="sPoi" min="1" max="40" step="1" value="6">
+          <span class="note">Xenakis usó exactamente λ = 0,6. Súbelo y la obra se satura; bájalo y se queda casi en silencio.</span>
+        </label>
+        <p class="note" style="margin-bottom:8px">Casillas por número de acontecimientos:</p>
+        <div class="barras" id="poiHisto" style="height:100px"></div>
+        <div class="card" style="margin:var(--pad) 0 0;background:#12101E">
+          <p class="note" style="margin:0">Cada vez que pulsas «volver a repartir» sale una obra distinta, pero la <b>silueta del histograma es siempre la misma</b>. Eso es lo que controla el compositor estocástico: no los acontecimientos, sino su ley.</p>
+        </div>
+        <div class="card viol" style="margin:var(--pad) 0 0">
+          <p class="note" style="margin:0 0 10px">Y esto no es una metáfora: mira la partitura gráfica de <i>Pithoprakta</i> y verás <b>exactamente esta nube de puntos</b>. Cada punto es un pizzicato de una de las 46 cuerdas, colocado por una ley de probabilidad.</p>
+          <button class="btn sm go vid" data-vid="pithoprakta">▶ Ver Pithoprakta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="n">5.5</span> Para cerrar</h3>
+    <div class="txt">
+      <p>La música estocástica es también <b>azar en el momento de la creación</b>: por eso el libro la mete en el mismo cajón que los dados. La diferencia está en quién tira: en vez de un dado hay una ley —Gauss, Poisson, Maxwell-Boltzmann— y en vez de elegir notas se eligen <u>densidades, nubes y tendencias</u>.</p>
+      <p class="note">Xenakis lo resumió mejor que nadie: no le interesaba la nota, le interesaba la masa. Ya te avisó tu profesor de que este año ibais a ver cosas bien frikis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 6 · EL MAPA ═══════════════ -->
+<section class="view" id="v-mapa">
+  <h2 class="sec">El mapa de la unidad</h2>
+  <div class="card viol" style="margin:0">
+    <div class="grid2b" style="align-items:start">
+      <div>
+        <h3 class="v" style="margin-bottom:calc(var(--pad)*.7)">El decisómetro</h3>
+        <div id="deciBotones"></div>
+      </div>
+      <div id="deciCaja">
+        <div class="pill big v" id="deciResul">—</div>
+        <p class="txt" id="deciTxt">Responde a la izquierda pensando en cualquier obra. Funciona igual de bien al revés: elige una casilla de abajo y comprueba qué respuestas la producen.</p>
+        <p class="note" id="deciEj"></p>
+        <button class="btn sm go" id="deciOir" style="margin-top:auto">▶ Oír un ejemplo así</button>
+      </div>
+    </div>
+    <div class="familias" id="familias"></div>
+  </div>
+</</section>
+
+</div>
+
+<div id="toast"></div>
+
+<div id="cine">
+  <div id="cineBox">
+    <div class="row sb" style="align-items:flex-start">
+      <div>
+        <h3 id="cineTit">—</h3>
+        <p id="cineSub">—</p>
+      </div>
+      <button class="btn sm" id="cineCerrar">✕ Cerrar</button>
+    </div>
+    <p class="note" id="cineNota" style="margin:8px 0 0"></p>
+    <div id="cineSala">
+      <div id="cineMarco"></div>
+    </div>
+  </div>
+</div>
+
+<div id="boot">
+  <canvas id="bootCv" width="300" height="300"></canvas>
+  <h1>Taller de Atonalidad</h1>
+  <h2>Unidad 3 · Atonalidad y series dodecafónicas</h2>
+  <p class="lede">Un campo de gravedad que se puede apagar, dos máquinas de azar, un lienzo sin reglas, doce sonidos con método y una nube de probabilidad. Todo lo de la unidad, para verlo y oírlo.</p>
+  <button class="btn go" id="bootBtn" style="height:calc(var(--bh)*1.15);padding:0 calc(var(--pad)*2)">Entrar en el taller</button>
+  <p class="warn">Sube el volumen: casi todo aquí se explica sonando. Funciona mejor a pantalla completa y con altavoces.</p>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   TALLER DE ATONALIDAD · Unidad 3
+   Núcleo: audio, notación, pestañas
+   ══════════════════════════════════════════════════════════════ */
+'use strict';
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    r=Math.min(typeof r==='number'?r:0,w/2,h/2);
+    this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath(); return this;};
+}
+const $=(s,c)=>(c||document).querySelector(s);
+const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const azar=(a,b)=>a+Math.random()*(b-a);
+const azarI=(a,b)=>Math.floor(azar(a,b+1));
+const elige=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ── nombres (cifrado español, con bemoles como en el libro) ── */
+const NOM =['Do','Re♭','Re','Mi♭','Mi','Fa','Sol♭','Sol','La♭','La','Si♭','Si'];
+const NOMC=NOM;
+const ING =['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+/* letra diatónica (Do=0 … Si=6) y alteración por cada clase de altura */
+const ESCR=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];
+const mod12=n=>((n%12)+12)%12;
+const frecDe=m=>440*Math.pow(2,(m-69)/12);
+
+/* ══════════ AUDIO ══════════ */
+let AC=null, master=null, comp=null, ruidoBuf=null;
+const vivos=new Set(); let temporizadores=[]; const PARADAS=[];
+function ac(){
+  if(!AC){
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    master=AC.createGain(); master.gain.value=.68;
+    comp=AC.createDynamicsCompressor();
+    comp.threshold.value=-14; comp.knee.value=22; comp.ratio.value=7;
+    comp.attack.value=.004; comp.release.value=.22;
+    master.connect(comp); comp.connect(AC.destination);
+    const n=2*AC.sampleRate; ruidoBuf=AC.createBuffer(1,n,AC.sampleRate);
+    const d=ruidoBuf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+  }
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+const ahora=()=>ac().currentTime;
+function reg(n){ vivos.add(n); n.onended=()=>vivos.delete(n); }
+function tempo(fn,ms){ const t=setTimeout(fn,ms); temporizadores.push(t); return t; }
+function pararTodo(){
+  temporizadores.forEach(clearTimeout); temporizadores=[];
+  vivos.forEach(n=>{ try{n.stop(0)}catch(e){} }); vivos.clear();
+  PARADAS.forEach(f=>{ try{f()}catch(e){} });
+}
+
+const TIMBRES={
+  cuerda :{onda:'sawtooth', corte:2400, q:.7, atk:.05, dec:.9,  sus:.55, rel:.35, vib:4.5, vibA:3.5, vol:.16},
+  viento :{onda:'triangle', corte:2900, q:.5, atk:.035,dec:.5,  sus:.72, rel:.25, vib:5,   vibA:2.5, vol:.24},
+  campana:{onda:'sine',     corte:6000, q:.4, atk:.004,dec:1.9, sus:.02, rel:1.4, vib:0,   vibA:0,   vol:.30, arm:[[2.76,.35],[5.4,.16]]},
+  pizz   :{onda:'triangle', corte:3400, q:1.1,atk:.003,dec:.22, sus:.02, rel:.16, vib:0,   vibA:0,   vol:.34, arm:[[2,.18]]},
+  organo :{onda:'square',   corte:1500, q:.6, atk:.02, dec:.2,  sus:.85, rel:.16, vib:0,   vibA:0,   vol:.13},
+  metal  :{onda:'sawtooth', corte:4200, q:2.2,atk:.008,dec:.6,  sus:.18, rel:.4,  vib:0,   vibA:0,   vol:.20, arm:[[3.01,.22]]},
+  cuerpo :{onda:'sine',     corte:900,  q:.5, atk:.002,dec:.34, sus:.01, rel:.2,  vib:0,   vibA:0,   vol:.5},
+  piano  :{onda:'triangle', corte:2300, q:.4, atk:.004,dec:.85, sus:.10, rel:.55, vib:0,   vibA:0,   vol:.26, arm:[[2,.13],[3,.045]]}
+};
+
+/* nota(midi, retardo_en_segundos, duración, opciones) */
+function nota(midi, t, dur, o){
+  o=o||{}; const C=ac(), T=(TIMBRES[o.timbre]||TIMBRES.viento);
+  const t0=(t==null?0:t)+C.currentTime, f0=frecDe(midi);
+  const vol=(o.gain==null?1:o.gain)*T.vol;
+  const g=C.createGain(); g.gain.value=0;
+  let nodo=g;
+  if(o.pan!=null){ const p=C.createStereoPanner(); p.pan.value=clamp(o.pan,-1,1); g.connect(p); nodo=p; }
+  const flt=C.createBiquadFilter(); flt.type='lowpass';
+  flt.frequency.value=o.corte||T.corte; flt.Q.value=T.q;
+  nodo.connect(flt); flt.connect(o.dest||master);
+
+  const osc=C.createOscillator(); osc.type=T.onda; osc.frequency.setValueAtTime(f0,t0);
+  if(o.gliss!=null){
+    const f1=frecDe(o.gliss);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20,f1), t0+dur*(o.glissDur||1));
+  }
+  osc.connect(g); osc.start(t0); osc.stop(t0+dur+T.rel+.05); reg(osc);
+  if(T.arm) T.arm.forEach(a=>{
+    const o2=C.createOscillator(); o2.type='sine';
+    o2.frequency.setValueAtTime(f0*a[0],t0);
+    const g2=C.createGain(); g2.gain.value=a[1];
+    o2.connect(g2); g2.connect(g); o2.start(t0); o2.stop(t0+dur+T.rel+.05); reg(o2);
+  });
+  if(T.vib){
+    const lfo=C.createOscillator(), lg=C.createGain();
+    lfo.frequency.value=T.vib; lg.gain.value=T.vibA;
+    lfo.connect(lg); lg.connect(osc.frequency); lfo.start(t0+.06); lfo.stop(t0+dur+T.rel); reg(lfo);
+  }
+  const a=T.atk, d=T.dec, s=T.sus, r=T.rel;
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(vol, t0+a);
+  g.gain.setTargetAtTime(vol*s, t0+a, d*.4);
+  g.gain.setTargetAtTime(0, t0+Math.max(a+.01,dur), r*.4);
+  return {osc,g};
+}
+/* golpe de ruido (radios, percusión, piedra) */
+function ruido(t, dur, o){
+  o=o||{}; const C=ac(); const t0=(t||0)+C.currentTime;
+  const s=C.createBufferSource(); s.buffer=ruidoBuf; s.loop=true;
+  const f=C.createBiquadFilter(); f.type=o.tipo||'bandpass';
+  f.frequency.value=o.frec||1200; f.Q.value=o.q||1.2;
+  const g=C.createGain(); g.gain.value=0;
+  let nodo=g;
+  if(o.pan!=null){ const p=C.createStereoPanner(); p.pan.value=clamp(o.pan,-1,1); g.connect(p); nodo=p; }
+  s.connect(f); f.connect(g); nodo.connect(o.dest||master);
+  const v=(o.gain==null?.2:o.gain);
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(v,t0+(o.atk||.02));
+  g.gain.setTargetAtTime(0,t0+dur*.7,(o.rel||.12));
+  s.start(t0); s.stop(t0+dur+.4); reg(s);
+  return {src:s,g,f};
+}
+/* glissando de cuerda continuo */
+function gliss(m0,m1,t,dur,o){
+  o=o||{}; return nota(m0,t,dur,Object.assign({timbre:'cuerda',gliss:m1},o));
+}
+
+/* lienzo a la resolución real de la pantalla: la partitura deja de verse borrosa */
+function lienzo(cv, prop, altoFijo){
+  const w=Math.max(320, Math.round(cv.clientWidth || (cv.parentNode&&cv.parentNode.clientWidth) || 900));
+  const d=Math.min(3, window.devicePixelRatio||1);
+  const h=Math.round(altoFijo!=null? altoFijo : w*prop);
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){
+    cv.width=Math.round(w*d); cv.height=Math.round(h*d); cv.style.height=h+'px';
+  }
+  const g=cv.getContext('2d');
+  g.setTransform(d,0,0,d,0,0);
+  cv.LW=w; cv.LH=h;
+  return g;
+}
+const REDIBUJOS=[];
+window.addEventListener('resize',()=>{ REDIBUJOS.forEach(f=>{try{f()}catch(e){}}); });
+
+/* ══════════ NOTACIÓN ══════════ */
+const PAPEL='#F7F7F4';
+const PENT_S=20;          /* tamaño único de pentagrama en todo el portal */
+function claveSol(ctx,x,y,s,lw){
+  const S=s, p=new Path2D();
+  p.moveTo(-0.60*S, 2.45*S);
+  p.bezierCurveTo(-1.00*S,3.05*S,  0.12*S,3.20*S,  0.44*S,2.30*S);
+  p.bezierCurveTo( 0.66*S,1.50*S,  0.32*S,0.50*S,  0.10*S,-0.40*S);
+  p.bezierCurveTo(-0.12*S,-1.40*S,-0.32*S,-2.20*S,-0.24*S,-2.95*S);
+  p.bezierCurveTo(-0.14*S,-3.86*S, 0.72*S,-4.10*S, 0.82*S,-3.34*S);
+  p.bezierCurveTo( 0.94*S,-2.70*S, 0.20*S,-2.42*S,-0.30*S,-2.00*S);
+  p.bezierCurveTo(-1.10*S,-1.32*S,-1.42*S,-0.50*S,-1.12*S, 0.22*S);
+  p.bezierCurveTo(-0.86*S, 0.98*S, 0.10*S, 1.20*S, 0.60*S, 0.70*S);
+  p.bezierCurveTo( 1.05*S, 0.24*S, 0.86*S,-0.50*S, 0.24*S,-0.58*S);
+  p.bezierCurveTo(-0.34*S,-0.64*S,-0.66*S,-0.10*S,-0.34*S, 0.26*S);
+  p.bezierCurveTo(-0.14*S, 0.48*S, 0.14*S, 0.38*S, 0.14*S, 0.10*S);
+  ctx.save(); ctx.translate(x,y); ctx.lineWidth=s*(lw||.19);
+  ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(p); ctx.restore();
+}
+function bemol(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.lineWidth=s*.15; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(0,-1.75*s); ctx.lineTo(0,.45*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,.42*s);
+  ctx.bezierCurveTo(.30*s,.10*s,.72*s,-.06*s,.60*s,-.42*s);
+  ctx.bezierCurveTo(.50*s,-.72*s,.14*s,-.52*s,0,-.16*s);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function becuadro(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.lineCap='butt';
+  ctx.lineWidth=s*.095;
+  ctx.beginPath(); ctx.moveTo(-.13*s,-1.10*s); ctx.lineTo(-.13*s,.46*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(.29*s,-.46*s); ctx.lineTo(.29*s,1.10*s); ctx.stroke();
+  ctx.lineWidth=s*.19;
+  ctx.beginPath(); ctx.moveTo(-.13*s,-.54*s); ctx.lineTo(.29*s,-.67*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-.13*s,.54*s); ctx.lineTo(.29*s,.41*s); ctx.stroke();
+  ctx.restore();
+}
+/* redonda con el hueco de verdad: la línea del pentagrama se ve a través */
+function redonda(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y);
+  const p=new Path2D();
+  p.ellipse(0,0,.72*s,.50*s,-.20,0,Math.PI*2);
+  const h=new Path2D();
+  h.ellipse(0,0,.40*s,.185*s,-.44,0,Math.PI*2);
+  p.addPath(h);
+  ctx.fill(p,'evenodd');
+  ctx.restore();
+}
+function negra(ctx,x,y,s,arriba){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath(); ctx.ellipse(0,0,.66*s,.48*s,-.32,0,7); ctx.fill();
+  ctx.lineWidth=s*.13; ctx.beginPath();
+  if(arriba){ ctx.moveTo(.62*s,-.12*s); ctx.lineTo(.62*s,-3.3*s); }
+  else { ctx.moveTo(-.62*s,.12*s); ctx.lineTo(-.62*s,3.3*s); }
+  ctx.stroke(); ctx.restore();
+}
+function cabezaLlena(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath(); ctx.ellipse(0,0,.66*s,.46*s,-.32,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+/* val: 4 redonda · 2 blanca · 1.5 negra c/p · 1 negra · .75 corchea c/p · .5 corchea · .25 semicorchea */
+function figuraNota(ctx,x,y,s,val,arriba,enLinea){
+  if(val==null) val=4;
+  if(val>=4){ redonda(ctx,x,y,s); return; }
+  if(val<2) cabezaLlena(ctx,x,y,s); else redonda(ctx,x,y,s);
+  const dx=(arriba? .60: -.60)*s;
+  const y0=y+(arriba?-.10:.10)*s;
+  const largo=3.35*s*(arriba?-1:1);
+  const fin=y0+largo;
+  ctx.save(); ctx.lineCap='butt'; ctx.lineWidth=s*.115;
+  ctx.beginPath(); ctx.moveTo(x+dx,y0); ctx.lineTo(x+dx,fin); ctx.stroke();
+  const nf = (val<=.25)?2 : (val<=.75?1:0);
+  for(let k=0;k<nf;k++){
+    const yy=fin+(arriba? k*.62*s : -k*.62*s);
+    ctx.lineWidth=s*.15; ctx.beginPath(); ctx.moveTo(x+dx,yy);
+    if(arriba) ctx.bezierCurveTo(x+dx+.85*s,yy+.42*s, x+dx+.92*s,yy+1.0*s, x+dx+.30*s,yy+1.45*s);
+    else       ctx.bezierCurveTo(x+dx+.85*s,yy-.42*s, x+dx+.92*s,yy-1.0*s, x+dx+.30*s,yy-1.45*s);
+    ctx.stroke();
+  }
+  ctx.restore();
+  if(val===1.5||val===3||val===.75||val===.375){
+    ctx.save(); ctx.beginPath();
+    ctx.arc(x+1.02*s, y-(enLinea?.5*s:0), s*.115, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+}
+/* paso diatónico absoluto de un midi (Mi4 = 30) */
+function pasoDe(midi){
+  const pc=mod12(midi), oct=Math.floor(midi/12)-1, e=ESCR[pc];
+  return oct*7+e[0];
+}
+/* dibuja un pentagrama con redondas.
+   o={x,y,w,s,midis:[],tinta,fondo,etiquetas:[],resalta:idx,titulo,doble} */
+function pentagrama(ctx,o){
+  const s=o.s, x=o.x, y=o.y, w=o.w, tinta=o.tinta||'#14121C', fondo=o.fondo||'#F2F0EA';
+  ctx.save(); ctx.strokeStyle=tinta; ctx.fillStyle=tinta;
+  ctx.lineWidth=Math.max(1,s*.075);
+  for(let i=0;i<5;i++){ const yy=y+i*s; ctx.beginPath(); ctx.moveTo(x,yy); ctx.lineTo(x+w,yy); ctx.stroke(); }
+  const yBase=y+4*s;                       // línea de Mi4 (paso 30)
+  const yDe=paso=>yBase-(paso-30)*(s/2);
+  claveSol(ctx,x+s*1.75,y+3*s,s);
+  const n=o.midis.length; if(!n){ ctx.restore(); return; }
+  let pasoMin=99, pasoMax=-99;
+  o.midis.forEach(m=>{ const q=pasoDe(m); if(q<pasoMin)pasoMin=q; if(q>pasoMax)pasoMax=q; });
+  const yNom=Math.max(y+6.5*s, yDe(pasoMin)+2.15*s);
+  const yTit=o.nombres? yNom+1.6*s : Math.max(y+6.3*s, yDe(pasoMin)+2.1*s);
+  const ranuras=Math.max(n, o.huecos||0);
+  const x0=x+s*3.9, x1=x+w-s*2.7;
+  const dx=(x1-x0)/Math.max(1, ranuras-1);
+  const alteradas={};
+  o.midis.forEach((m,i)=>{
+    const cx=(ranuras===1)?x0:x0+i*dx;
+    const pc=mod12(m), e=ESCR[pc], paso=pasoDe(m), cy=yDe(paso);
+    const res=(o.resalta===i);
+    ctx.save();
+    if(res){ ctx.fillStyle=o.color||'#7A3FC6'; ctx.strokeStyle=o.color||'#7A3FC6'; }
+    /* líneas adicionales */
+    ctx.lineWidth=Math.max(1,s*.085);
+    if(paso<=28) for(let ls=28; ls>=paso; ls-=2){ const ly=yDe(ls); ctx.beginPath(); ctx.moveTo(cx-s*.95,ly); ctx.lineTo(cx+s*.95,ly); ctx.stroke(); }
+    if(paso>=40) for(let ls=40; ls<=paso; ls+=2){ const ly=yDe(ls); ctx.beginPath(); ctx.moveTo(cx-s*.95,ly); ctx.lineTo(cx+s*.95,ly); ctx.stroke(); }
+    /* alteración */
+    if(e[1]===-1){ bemol(ctx,cx-s*1.32,cy,s); alteradas[e[0]]=1; }
+    else if(alteradas[e[0]]){ becuadro(ctx,cx-s*1.30,cy,s); alteradas[e[0]]=0; }
+    figuraNota(ctx,cx,cy,s, o.figuras?o.figuras[i]:4, paso<34, paso%2===0);
+    ctx.restore();
+    if(o.nombres){
+      ctx.save(); ctx.fillStyle=res?(o.color||'#7A3FC6'):'rgba(30,26,44,.62)';
+      ctx.font=`${(s*.80)|0}px "Avenir Next",Helvetica,Arial,sans-serif`;
+      ctx.textAlign='center'; ctx.fillText(NOM[pc],cx,yNom); ctx.restore();
+    }
+  });
+  if(o.titulo){
+    ctx.save(); ctx.fillStyle=o.colorTitulo||tinta;
+    ctx.font=`${(s*.92)|0}px "Avenir Next",Helvetica,Arial,sans-serif`;
+    ctx.textAlign='left'; ctx.fillText(o.titulo, x+s*.3, yTit); ctx.restore();
+  }
+  if(o.doble!==false){
+    ctx.lineWidth=Math.max(1,s*.09); ctx.beginPath();
+    ctx.moveTo(x+w-s*.55,y); ctx.lineTo(x+w-s*.55,y+4*s); ctx.stroke();
+    ctx.lineWidth=Math.max(2,s*.24); ctx.beginPath();
+    ctx.moveTo(x+w-s*.16,y); ctx.lineTo(x+w-s*.16,y+4*s); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ══════════ INTERFAZ ══════════ */
+function toast(html,ms){
+  const t=$('#toast'); t.innerHTML=html; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'), ms||5200);
+}
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{
+  pararTodo();
+  $$('.tab').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  $('#v-'+b.dataset.v).classList.add('on');
+  $('#main').scrollTop=0;
+  if(typeof alCambiarVista==='function') alCambiarVista(b.dataset.v);
+}));
+$('#pararTodoBtn').addEventListener('click',pararTodo);
+/* la cabecera puede crecer si las pestañas se parten en dos filas */
+function ajustaTop(){
+  const h=$('#top').offsetHeight;
+  const pad=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pad'))||14;
+  $('#main').style.paddingTop=(h+pad*1.4)+'px';
+}
+window.addEventListener('resize',ajustaTop);
+if(window.ResizeObserver) new ResizeObserver(ajustaTop).observe($('#top'));
+ajustaTop();
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') pararTodo(); });
+
+/* ── pantalla de arranque ── */
+(function(){
+  const c=$('#bootCv'), g=c.getContext('2d'); let t=0, raf;
+  function dib(){
+    const W=c.width,H=c.height,cx=W/2,cy=H/2;
+    g.clearRect(0,0,W,H); t+=.012;
+    for(let i=0;i<12;i++){
+      const a=-Math.PI/2+i*Math.PI/6;
+      const r=104+Math.sin(t*1.6+i*.9)*7;
+      const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+      g.strokeStyle='rgba(185,140,245,.30)'; g.lineWidth=1;
+      g.beginPath(); g.moveTo(cx,cy); g.lineTo(x,y); g.stroke();
+      const p=(Math.sin(t*2.1+i*1.3)+1)/2;
+      g.beginPath(); g.arc(x,y,4.5+p*4.5,0,7);
+      g.fillStyle=`rgba(${185+p*60|0},${140+p*80|0},245,${.45+p*.5})`; g.fill();
+    }
+    g.strokeStyle='rgba(245,194,100,.35)'; g.lineWidth=1.2;
+    g.beginPath(); g.arc(cx,cy,104,0,7); g.stroke();
+    g.beginPath(); g.arc(cx,cy,26+Math.sin(t*1.3)*4,0,7);
+    g.fillStyle='rgba(245,194,100,.13)'; g.fill();
+    g.strokeStyle='rgba(245,194,100,.55)'; g.stroke();
+    raf=requestAnimationFrame(dib);
+  }
+  dib();
+  $('#bootBtn').addEventListener('click',()=>{
+    ac();
+    $('#boot').classList.add('gone');
+    setTimeout(()=>{ $('#boot').style.display='none'; cancelAnimationFrame(raf); },520);
+    toast('Estás en <u>Tonal / Atonal</u>. Empieza por el <em>test de la nota que falta</em> y remátalo con el mando de la gravedad.',7000);
+    if(typeof alArrancar==='function') alArrancar();
+  });
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   1 · TONAL / ATONAL
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── teclado de piano reutilizable ── */
+function creaPiano(el, m0, nOct){
+  el.innerHTML='';
+  const BL=[0,2,4,5,7,9,11], CON_NEGRA=[0,1,3,4,5];
+  const total=nOct*7, w=100/total, teclas={};
+  let idx=0;
+  for(let o=0;o<nOct;o++) for(let g=0;g<7;g++){
+    const m=m0+o*12+BL[g];
+    const d=document.createElement('div'); d.className='kw';
+    d.style.left='calc('+(idx*w)+'% + 1px)';
+    d.style.width='calc('+w+'% - 2px)';
+    d.dataset.m=m; d.innerHTML='<span class="num"></span>';
+    el.appendChild(d); teclas[m]=d;
+    if(BL[g]===0 && nOct>1){
+      const et=document.createElement('div'); et.className='et';
+      et.style.left=(idx*w)+'%'; et.style.width=w+'%';
+      et.textContent='Do'+(Math.floor(m/12)-1); el.appendChild(et);
+    }
+    idx++;
+  }
+  idx=0;
+  for(let o=0;o<nOct;o++) for(let g=0;g<7;g++){
+    if(CON_NEGRA.indexOf(g)>=0){
+      const m=m0+o*12+BL[g]+1;
+      const d=document.createElement('div'); d.className='kb';
+      d.style.left='calc('+(idx*w)+'% + '+(w*0.63)+'%)';
+      d.style.width=(w*0.62)+'%';
+      d.dataset.m=m; d.innerHTML='<span class="num"></span>';
+      el.appendChild(d); teclas[m]=d;
+    }
+    idx++;
+  }
+  return teclas;
+}
+
+/* ─────────── 1.1 · definiciones ─────────── */
+(function(){
+  $('#btnDef').addEventListener('click',()=>{
+    $('#defAto').classList.remove('hide');
+    $('#btnDef').textContent='Definiciones a la vista';
+    $('#btnDef').disabled=true;
+  });
+})();
+
+/* ─────────── 1.2 · el test de la nota de reposo ─────────── */
+(function(){
+  const PRUEBAS=[
+    {k:'tonal',  frase:[72,76,79,81,79,77,76,74,71], resp:0,
+     piano:'#pianoTonal', btn:'#testTonal', repe:'#repeTonal', msg:'#msgTonal', ok:'#okTonal'},
+    {k:'atonal', frase:[73,68,79,66,75,70,81,64,77], resp:null,
+     piano:'#pianoAtonal',btn:'#testAtonal',repe:'#repeAtonal',msg:'#msgAtonal',ok:'#okAtonal'}
+  ];
+  PRUEBAS.forEach(P=>{
+    const el=$(P.piano);
+    const teclas=creaPiano(el, 60, 2);
+    let listo=false;
+
+    function apaga(cls){ Object.keys(teclas).forEach(m=>teclas[m].classList.remove(cls)); }
+    function ilumina(m,ms){
+      const t=teclas[m]; if(!t) return;
+      t.classList.add('suena');
+      tempo(()=>t.classList.remove('suena'), ms||360);
+    }
+    function suenaFrase(){
+      pararTodo(); ac();
+      apaga('suena'); apaga('elegida'); apaga('acierto');
+      $(P.ok).classList.add('hide'); $(P.msg).classList.remove('hide');
+      el.classList.remove('activo'); listo=false;
+      let t=0;
+      P.frase.forEach(m=>{
+        nota(m,t,.44,{timbre:'viento',gain:1});
+        tempo(()=>ilumina(m,420), t*1000);
+        t+=.42;
+      });
+      $(P.msg).innerHTML='Sonando…';
+      tempo(()=>{
+        listo=true; el.classList.add('activo');
+        $(P.msg).innerHTML='Ahora elige en el piano la nota que pide la frase para quedar en <em>reposo</em>.';
+      }, t*1000+150);
+    }
+    $(P.btn).addEventListener('click',()=>{ $(P.repe).disabled=false; suenaFrase(); });
+    $(P.repe).addEventListener('click',suenaFrase);
+
+    el.addEventListener('click',e=>{
+      if(!listo) return;
+      const t=e.target.closest('[data-m]'); if(!t) return;
+      const m=+t.dataset.m, pc=mod12(m);
+      pararTodo(); ac();
+      apaga('elegida'); apaga('acierto');
+      const cola=P.frase.slice(-2); let tt=0;
+      cola.forEach(x=>{ nota(x,tt,.36,{timbre:'viento'}); tempo(()=>ilumina(x,340), tt*1000); tt+=.34; });
+      nota(m,tt,1.6,{timbre:'viento',gain:1.1});
+      const acierta=(P.resp!==null && pc===P.resp);
+      tempo(()=>{ t.classList.add(acierta?'acierto':'elegida'); }, tt*1000);
+      if(P.resp===null || acierta){
+        $(P.ok).classList.remove('hide');
+        $(P.msg).classList.add('hide');
+      }
+    });
+  });
+})();
+
+/* ─────────── 1.3 · el mando de la gravedad ─────────── */
+(function(){
+  const PERFIL=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88];
+  const maxP=Math.max.apply(null,PERFIL), minP=Math.min.apply(null,PERFIL);
+  const CENTRO=0;                      // Do, fijo
+  const cvC=$('#cvCampo'), gC=cvC.getContext('2d');
+  let grav=1, vel=2, actual=0, cuenta=new Array(12).fill(0), total=0;
+  let rastro=[], pulso=0;
+
+  const histo=$('#histo');
+  NOM.forEach((n,i)=>{
+    const d=document.createElement('div'); d.className='bcol';
+    d.innerHTML='<div class="bar"><div class="fill"></div></div><div class="bn">'+NOM[i]+'</div>';
+    histo.appendChild(d);
+  });
+  const fills=()=>$$('#histo .fill');
+
+  function pesos(){
+    const w=[];
+    for(let i=0;i<12;i++){
+      const g=mod12(i-CENTRO);
+      const p=(PERFIL[g]-minP)/(maxP-minP);
+      w.push((1-grav)*1 + grav*(0.06+p*p*2.6));
+    }
+    return w;
+  }
+  function colorGrav(a){
+    const r=Math.round(245+(185-245)*(1-grav)), gg=Math.round(194+(140-194)*(1-grav)), b=Math.round(100+(245-100)*(1-grav));
+    return 'rgba('+r+','+gg+','+b+','+a+')';
+  }
+  function refrescaEtiquetas(){
+    $('#vGrav').textContent=Math.round(grav*100)+' % · '+(grav>.72?'tonal':grav>.34?'a medio camino':grav>.06?'casi atonal':'atonal');
+    $('#lblCampo').textContent='Campo tonal · gravedad '+Math.round(grav*100)+'%';
+    $('#lblCentro').textContent='Centro: Do';
+    $('#vVel').textContent=vel+' nota'+(vel===1?'':'s')+'/s';
+  }
+  function reparto(){
+    if(total<8) return '—';
+    const m=total/12; let dv=0;
+    for(let i=0;i<12;i++) dv+=Math.abs(cuenta[i]-m);
+    const d=dv/(2*total);
+    if(d<.12) return 'equilibrado';
+    if(d<.26) return 'algo desigual';
+    if(d<.42) return 'desigual';
+    return 'muy desigual';
+  }
+  function pinta(){
+    const W=cvC.width,H=cvC.height,cx=W/2,cy=H*.52,R=Math.min(W,H)*.36;
+    gC.clearRect(0,0,W,H);
+    const w=pesos(), mw=Math.max.apply(null,w);
+    for(let i=0;i<12;i++){
+      const a=-Math.PI/2+i*Math.PI/6, x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R;
+      const f=w[i]/mw, rr=10+f*54;
+      const gr=gC.createRadialGradient(x,y,2,x,y,rr);
+      gr.addColorStop(0,colorGrav(.30*f+.06)); gr.addColorStop(1,'rgba(0,0,0,0)');
+      gC.fillStyle=gr; gC.beginPath(); gC.arc(x,y,rr,0,7); gC.fill();
+    }
+    gC.strokeStyle='rgba(140,140,180,.20)'; gC.lineWidth=1;
+    gC.beginPath(); gC.arc(cx,cy,R,0,7); gC.stroke();
+    gC.lineWidth=1.4;
+    for(let k=1;k<rastro.length;k++){
+      const a0=-Math.PI/2+rastro[k-1]*Math.PI/6, a1=-Math.PI/2+rastro[k]*Math.PI/6;
+      gC.strokeStyle=colorGrav((k/rastro.length)*.45);
+      gC.beginPath();
+      gC.moveTo(cx+Math.cos(a0)*R,cy+Math.sin(a0)*R);
+      gC.lineTo(cx+Math.cos(a1)*R,cy+Math.sin(a1)*R);
+      gC.stroke();
+    }
+    for(let i=0;i<12;i++){
+      const a=-Math.PI/2+i*Math.PI/6, x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R;
+      const f=w[i]/mw, act=(i===actual), rr=5+f*13;
+      gC.beginPath(); gC.arc(x,y,rr,0,7);
+      gC.fillStyle= act? '#FFFFFF' : colorGrav(.35+f*.5); gC.fill();
+      if(act){ gC.strokeStyle=colorGrav(.95); gC.lineWidth=3;
+        gC.beginPath(); gC.arc(x,y,rr+7+Math.sin(pulso)*3,0,7); gC.stroke(); }
+      if(i===CENTRO && grav>.05){
+        gC.strokeStyle='rgba(245,194,100,'+(.35+grav*.5)+')'; gC.lineWidth=2;
+        gC.beginPath(); gC.arc(x,y,rr+13,0,7); gC.stroke();
+      }
+      gC.fillStyle= act? '#FFFFFF':'rgba(214,216,230,.72)';
+      gC.font='600 '+(act?18:15)+'px Futura,"Avenir Next",Helvetica,sans-serif';
+      gC.textAlign='center'; gC.textBaseline='middle';
+      gC.fillText(NOM[i], cx+Math.cos(a)*(R+38), cy+Math.sin(a)*(R+38));
+    }
+    gC.fillStyle='rgba(214,216,230,.34)';
+    gC.font='600 13px Futura,"Avenir Next",Helvetica,sans-serif';
+    gC.fillText(grav>.5?'GRAVEDAD':'SIN CENTRO',cx,cy-10);
+    gC.font='600 26px Futura,"Avenir Next",Helvetica,sans-serif';
+    gC.fillStyle=colorGrav(.9);
+    gC.fillText(Math.round(grav*100)+'%',cx,cy+16);
+    pulso+=.09;
+    requestAnimationFrame(pinta);
+  }
+  pinta();
+
+  function siguiente(){
+    const w=pesos(), tau=2.9+(1-grav)*7.5, p=[];
+    for(let i=0;i<12;i++){
+      let d=Math.abs(i-actual); d=Math.min(d,12-d);
+      p.push(Math.pow(w[i],1+grav*1.1)*Math.exp(-d/tau)*(i===actual?.10:1));
+    }
+    const S=p.reduce((a,b)=>a+b,0); let r=Math.random()*S,k=0;
+    for(;k<12;k++){ r-=p[k]; if(r<=0) break; }
+    return Math.min(11,k);
+  }
+  let lazo=null;
+  function paso(){
+    actual=siguiente();
+    cuenta[actual]++; total++;
+    rastro.push(actual); if(rastro.length>26) rastro.shift();
+    const oct= grav>.5 ? (actual<CENTRO?5:4) : elige([4,4,5,5,3]);
+    nota(60+actual+(oct-4)*12, 0, Math.min(.9,1/vel*.85), {timbre:grav>.5?'viento':'pizz', gain:.95});
+    const mx=Math.max.apply(null,cuenta.concat([1]));
+    fills().forEach((f,i)=>{
+      f.style.height=(cuenta[i]/mx*100)+'%';
+      f.style.background= (i===CENTRO&&grav>.3)
+        ? 'linear-gradient(180deg,#F5C264,#8A5F10)'
+        : 'linear-gradient(180deg,'+(grav>.5?'#F0B45A':'#B98CF5')+','+(grav>.5?'#7A5410':'#5A3B95')+')';
+    });
+    $('#gravNotas').textContent=total+' notas';
+    $('#vReparto').textContent=reparto();
+  }
+  function pararLazo(){
+    clearInterval(lazo); lazo=null;
+    $('#gravPlay').textContent='▶ Que la máquina componga';
+    $('#gravPlay').classList.remove('on');
+  }
+  PARADAS.push(pararLazo);
+  $('#gravPlay').addEventListener('click',()=>{
+    if(lazo){ pararLazo(); return; }
+    ac(); $('#gravPlay').textContent='■ Parar'; $('#gravPlay').classList.add('on');
+    paso(); lazo=setInterval(paso, 1000/vel);
+  });
+  $('#gravReset').addEventListener('click',()=>{
+    cuenta=new Array(12).fill(0); total=0; rastro=[];
+    fills().forEach(f=>f.style.height='0%');
+    $('#gravNotas').textContent='0 notas'; $('#vReparto').textContent='—';
+  });
+  $('#sGrav').addEventListener('input',e=>{ grav=+e.target.value/100; refrescaEtiquetas(); });
+  $('#sVel').addEventListener('input',e=>{ vel=+e.target.value; refrescaEtiquetas();
+    if(lazo){ clearInterval(lazo); lazo=setInterval(paso,1000/vel); } });
+  refrescaEtiquetas();
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   2 · ALEATORIEDAD
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─────────── 2.1 · el dado compositor ─────────── */
+(function(){
+  /* un dado de doce caras: 1 = Do, 2 = Re♭, 3 = Re … 12 = Si */
+  const MAPA={}; for(let i=1;i<=12;i++) MAPA[i]=59+i;     // 1→Do4(60) … 12→Si4(71)
+  /* dado de figuras: seis caras */
+  const FIGS=[{v:2,n:'blanca'},{v:1.5,n:'negra con puntillo'},{v:1,n:'negra'},
+              {v:.75,n:'corchea con puntillo'},{v:.5,n:'corchea'},{v:.25,n:'semicorchea'}];
+  const PULSO=.62;                                        // segundos por negra
+  const TOTAL=10;
+  let obra=[], ritmo=[], caras=[];
+
+  /* ── el dado ── */
+  const cvD=$('#dado12'), gD=cvD.getContext('2d');
+  const cvF=$('#dadoFig'), gF=cvF.getContext('2d');
+  let caraVista=1, giro=0, figVista=2, giroF=0;
+  function pintaDado(){
+    const W=cvD.width, R=W*.42, cx=W/2, cy=W/2;
+    gD.clearRect(0,0,W,W);
+    gD.save(); gD.translate(cx,cy); gD.rotate(giro);
+    gD.beginPath();
+    for(let i=0;i<12;i++){
+      const a=-Math.PI/2+i*Math.PI/6;
+      const x=Math.cos(a)*R, y=Math.sin(a)*R;
+      i?gD.lineTo(x,y):gD.moveTo(x,y);
+    }
+    gD.closePath();
+    const gr=gD.createLinearGradient(-R,-R,R,R);
+    gr.addColorStop(0,'#FBF8EF'); gr.addColorStop(.55,'#DCD7C7'); gr.addColorStop(1,'#ABA697');
+    gD.fillStyle=gr; gD.fill();
+    gD.strokeStyle='rgba(60,56,44,.55)'; gD.lineWidth=W*.012; gD.stroke();
+    /* caras interiores, para que parezca un dodecaedro */
+    gD.strokeStyle='rgba(90,85,70,.28)'; gD.lineWidth=W*.007;
+    for(let i=0;i<12;i+=2){
+      const a=-Math.PI/2+i*Math.PI/6;
+      gD.beginPath(); gD.moveTo(0,0); gD.lineTo(Math.cos(a)*R,Math.sin(a)*R); gD.stroke();
+    }
+    gD.beginPath();
+    for(let i=0;i<6;i++){
+      const a=-Math.PI/2+(i*2+1)*Math.PI/6;
+      const x=Math.cos(a)*R*.52, y=Math.sin(a)*R*.52;
+      i?gD.lineTo(x,y):gD.moveTo(x,y);
+    }
+    gD.closePath(); gD.strokeStyle='rgba(90,85,70,.32)'; gD.stroke();
+    gD.restore();
+    gD.fillStyle='#231F18';
+    gD.font='600 '+Math.round(W*.30)+'px Futura,"Avenir Next",Helvetica,Arial,sans-serif';
+    gD.textAlign='center'; gD.textBaseline='middle';
+    gD.fillText(caraVista, cx, cy+W*.012);
+  }
+  function pintaDadoFig(){
+    const W=cvF.width, R=W*.40, cx=W/2, cy=W/2;
+    gF.clearRect(0,0,W,W);
+    gF.save(); gF.translate(cx,cy); gF.rotate(giroF);
+    gF.beginPath();
+    for(let i=0;i<6;i++){
+      const a=-Math.PI/2+i*Math.PI/3;
+      const x=Math.cos(a)*R, y=Math.sin(a)*R;
+      i?gF.lineTo(x,y):gF.moveTo(x,y);
+    }
+    gF.closePath();
+    const gr=gF.createLinearGradient(-R,-R,R,R);
+    gr.addColorStop(0,'#FBF8EF'); gr.addColorStop(.55,'#DCD7C7'); gr.addColorStop(1,'#ABA697');
+    gF.fillStyle=gr; gF.fill();
+    gF.strokeStyle='rgba(60,56,44,.55)'; gF.lineWidth=W*.012; gF.stroke();
+    gF.restore();
+    gF.save(); gF.fillStyle='#231F18'; gF.strokeStyle='#231F18';
+    figuraNota(gF, cx-W*.07, cy+W*.10, W*.145, figVista, true, false);
+    gF.restore();
+  }
+  pintaDado(); pintaDadoFig();
+
+  /* ── tabla de correspondencias ── */
+  const tabla=$('#dTabla');
+  for(let c=1;c<=12;c++){
+    const d=document.createElement('div');
+    d.className='row'; d.style.gap='6px';
+    const sel=document.createElement('select'); sel.className='sel'; sel.style.flex='1';
+    for(let m=48;m<=83;m++){
+      const op=document.createElement('option'); op.value=m;
+      op.textContent=NOM[mod12(m)]+(Math.floor(m/12)-1);
+      if(m===MAPA[c]) op.selected=true;
+      sel.appendChild(op);
+    }
+    sel.addEventListener('change',()=>{ MAPA[c]=+sel.value; redibuja(); });
+    d.innerHTML='<span class="pill" style="min-width:2.4em;text-align:center">'+c+'</span>';
+    d.appendChild(sel); tabla.appendChild(d);
+  }
+
+  /* ── partitura ── */
+  const cv=$('#cvDados');
+  function redibuja(res){
+    const s=PENT_S, g=lienzo(cv,0,s*11.8), W=cv.LW;
+    g.fillStyle=PAPEL; g.fillRect(0,0,W,cv.LH);
+    pentagrama(g,{x:s*1.3,y:s*2.5,w:W-s*2.6,s:s,midis:obra,figuras:ritmo,huecos:TOTAL,nombres:true,
+      titulo:obra.length?huella():'aún no has tirado',resalta:res,color:'#7A3FC6',
+      colorTitulo:'rgba(30,26,44,.55)',doble:obra.length>=TOTAL});
+  }
+  function huella(){
+    let h=0; obra.forEach((m,i)=>h=(h*31+m*(i+7)+(ritmo[i]||1)*97)%65536);
+    return 'obra #'+h.toString(16).toUpperCase().padStart(4,'0');
+  }
+  function actualiza(){
+    $('#dCuenta').textContent=obra.length+' / '+TOTAL;
+    const lista=obra.length>0;
+    $('#dPlay').disabled=!lista;
+    $('#dHuella').textContent=lista?huella():'obra —';
+    redibuja();
+  }
+  function tira(auto){
+    ac();
+    const c=azarI(1,12), f=azarI(0,5);
+    let n=0;
+    const iv=setInterval(()=>{
+      n++;
+      caraVista=azarI(1,12); giro+=.55; pintaDado();
+      figVista=FIGS[azarI(0,5)].v; giroF-=.5; pintaDadoFig();
+      if(n>10){ clearInterval(iv);
+        caraVista=c; giro=0; pintaDado();
+        figVista=FIGS[f].v; giroF=0; pintaDadoFig();
+        resultado(c,f,auto); }
+    },38);
+    temporizadores.push(iv);
+  }
+  function resultado(c,f,auto){
+    $('#dSuma').textContent=c;
+    $('#dNota').textContent=NOM[mod12(MAPA[c])];
+    $('#dFig').textContent=FIGS[f].n;
+    if(obra.length<TOTAL){ obra.push(MAPA[c]); ritmo.push(FIGS[f].v); caras.push(c); }
+    nota(MAPA[c],0,Math.max(.5,FIGS[f].v*PULSO),{timbre:'piano',gain:.75});
+    actualiza();
+    if(obra.length>=TOTAL && !auto){
+      $('#dMsg').innerHTML='Obra terminada. Pulsa <em>Interpretar</em> dos veces seguidas: suena <b>exactamente igual</b>. El azar ya hizo su trabajo, y fue al componer.';
+    }
+  }
+  $('#dTira').addEventListener('click',()=>{
+    if(obra.length>=TOTAL){ toast('La obra ya está completa. Pulsa <em>Empezar otra obra</em>.'); return; }
+    tira(false);
+  });
+  $('#dAuto').addEventListener('click',()=>{
+    ac(); obra=[]; ritmo=[]; caras=[]; actualiza();
+    let i=0;
+    (function paso(){
+      if(i>=TOTAL){
+        $('#dMsg').innerHTML='Obra terminada. Pulsa <em>Interpretar</em> dos veces seguidas: suena <b>exactamente igual</b>.';
+        return;
+      }
+      i++; tira(true); tempo(paso,640);
+    })();
+  });
+  $('#dNueva').addEventListener('click',()=>{
+    pararTodo(); obra=[]; ritmo=[]; caras=[]; actualiza();
+    $('#dSuma').textContent='—'; $('#dNota').textContent='—';
+    $('#dMsg').innerHTML='Otra obra. Vuelve a tirar: saldrá distinta, porque el azar actúa <em>en la creación</em>.';
+  });
+  function interpreta(){
+    pararTodo(); ac();
+    let t=.05;
+    obra.forEach((m,i)=>{
+      const d=(ritmo[i]||1)*PULSO;
+      nota(m,t,Math.max(.45,d*1.25),{timbre:'piano',gain:.85});
+      tempo(()=>redibuja(i), t*1000);
+      t+=d;
+    });
+    tempo(()=>redibuja(),t*1000+400);
+  }
+  $('#dPlay').addEventListener('click',interpreta);
+  actualiza(); REDIBUJOS.push(()=>redibuja());
+})();
+
+/* ─────────── 2.2 · las radios ─────────── */
+/* ══════════════════════════════════════════════════════════════
+   Cada radio recibe una frecuencia al azar. La mitad de las veces
+   engancha una emisora española de verdad (de esta lista) y la otra
+   mitad se queda en ruido blanco, como un dial mal sintonizado.
+   Si una emisora deja de funcionar, cambia su enlace y ya está.
+   ══════════════════════════════════════════════════════════════ */
+const EMISORAS=[
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3',
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3',
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3',
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOLE.mp3',
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40CLASSIC.mp3',
+  'https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOMARCA.mp3',
+  'https://kissfm.kissfmradio.cires21.com/kissfm.mp3',
+  'https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-hi.mp3'
+];
+
+(function(){
+  const N=8, cont=$('#radios');
+  let radios=[], sonando=false;
+
+  function frecAzar(){ return (87.5+Math.random()*20.4).toFixed(1); }
+
+  /* el siseo del dial: siempre suena algo, como en una radio de verdad */
+  function estatica(vol,pan,color){
+    const C=ac();
+    const src=C.createBufferSource(); src.buffer=ruidoBuf; src.loop=true;
+    const f=C.createBiquadFilter(); f.type='bandpass';
+    f.frequency.value=color||azar(1100,2600); f.Q.value=azar(.5,1.1);
+    const g=C.createGain(); g.gain.value=0;
+    const p=C.createStereoPanner(); p.pan.value=pan;
+    src.connect(f); f.connect(g); g.connect(p); p.connect(master);
+    g.gain.linearRampToValueAtTime(vol, C.currentTime+.25);
+    /* fluctuaciones lentas: el dial respira */
+    const lfo=C.createOscillator(), lg=C.createGain();
+    lfo.frequency.value=azar(.09,.3); lg.gain.value=vol*.5;
+    lfo.connect(lg); lg.connect(g.gain); lfo.start();
+    src.start();
+    return {stop(){ try{src.stop()}catch(e){} try{lfo.stop()}catch(e){} }, g:g, vol:vol};
+  }
+
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div'); d.className='rad';
+    d.innerHTML='<div class="rt">Radio '+(i+1)+'</div>'+
+      '<div class="rf"><span class="ff">—</span> <small style="opacity:.5">MHz</small></div>'+
+      '<div class="rg">sin sintonizar</div>'+
+      '<div class="rbot"><button class="btn xs go">▶</button>'+
+      '<input type="range" min="0" max="10" step="1" value="7"></div>'+
+      '<div class="luz"><i></i><span>apagada</span></div>';
+    cont.appendChild(d);
+    const btn=$('.btn',d), sl=$('input',d), txt=$('.luz span',d), gen=$('.rg',d);
+    const R={el:d, btn:btn, txt:txt, gen:gen, frec:'—', fuente:null, sint:0, color:1600,
+             audio:null, est:null, vol:.7, on:false, pan:(i/(N-1))*1.6-.8};
+    function estado(cls,t){ d.classList.remove('emite','buscando','mudo');
+      if(cls) d.classList.add(cls); txt.textContent=t; }
+    function soloRuido(t){
+      if(R.est) return;
+      R.est=estatica(R.vol*.16, R.pan, R.color);
+      estado('mudo', t||'solo ruido'); gen.textContent='nadie emite aquí';
+    }
+    R.enciende=function(){
+      if(R.on) return; R.on=true; ac();
+      btn.textContent='■'; btn.classList.remove('go'); btn.classList.add('on');
+      if(R.sint<=0 || !R.fuente){ soloRuido(); return; }
+      /* siempre hay siseo de fondo; cuanto peor sintonizada, más */
+      R.est=estatica(R.vol*(R.sint>=1?.030:.105), R.pan, R.color);
+      estado('buscando','sintonizando…');
+      const a=new Audio(); a.preload='none';
+      a.volume=R.vol*(R.sint>=1?1:.45); a.src=R.fuente;
+      a.addEventListener('playing',()=>{
+        estado(R.sint>=1?'emite':'buscando', R.sint>=1?'sintonizada':'a medio sintonizar');
+        gen.textContent = R.sint>=1?'se oye limpia':'se cuela entre el ruido';
+      });
+      a.addEventListener('error',()=>{ if(R.on){ if(R.est){R.est.stop();R.est=null;} soloRuido('sin señal'); } });
+      R.audio=a;
+      a.play().catch(()=>{ if(R.est){R.est.stop();R.est=null;} soloRuido('sin señal'); });
+      tempo(()=>{ if(R.on && R.audio && R.audio.paused){ if(R.est){R.est.stop();R.est=null;} soloRuido('sin señal'); } },9000);
+    };
+    R.apaga=function(){
+      R.on=false; btn.textContent='▶'; btn.classList.add('go'); btn.classList.remove('on');
+      estado('','apagada');
+      if(R.audio){ try{R.audio.pause();}catch(e){} R.audio.removeAttribute('src'); R.audio=null; }
+      if(R.est){ R.est.stop(); R.est=null; }
+    };
+    btn.addEventListener('click',()=>{ R.on?R.apaga():R.enciende(); refresca(); });
+    sl.addEventListener('input',()=>{ R.vol=+sl.value/10;
+      if(R.audio) R.audio.volume=R.vol*(R.sint>=1?1:.45);
+      if(R.est) R.est.g.gain.setTargetAtTime(R.vol*(R.sint>=1?.030:(R.sint>0?.105:.16)), ac().currentTime, .12); });
+    radios.push(R);
+  }
+
+  function sortea(){
+    paraTodas();
+    const usadas=[];
+    radios.forEach(R=>{
+      let f; let intentos=0;
+      do{ f=frecAzar(); intentos++; }while(usadas.indexOf(f)>=0 && intentos<40);
+      usadas.push(f); R.frec=f;
+      const r=Math.random();
+      R.sint = r<.34 ? 1 : (r<.67 ? .5 : 0);      /* limpia · a medias · nada */
+      R.fuente = R.sint>0 ? elige(EMISORAS) : null;
+      R.color = azar(900,3200);
+      $('.ff',R.el).textContent=R.frec;
+      R.gen.textContent='sin sintonizar';
+      R.txt.textContent='apagada';
+      R.el.classList.remove('emite','buscando','mudo');
+    });
+  }
+  function refresca(){
+    sonando = radios.some(r=>r.on);
+    $('#rTodas').textContent = sonando ? '■ Parar' : '▶ Interpretar';
+    $('#rTodas').classList.toggle('on', sonando);
+  }
+  function paraTodas(){ radios.forEach(r=>r.apaga()); refresca(); }
+  PARADAS.push(paraTodas);
+
+  $('#rTodas').addEventListener('click',()=>{
+    if(sonando){ paraTodas(); return; }
+    ac();
+    radios.forEach((r,i)=>tempo(()=>{ r.enciende(); refresca(); }, i*220));
+    refresca();
+    toast('Suena <b>lo que haya ahora mismo</b> en esas frecuencias. Sortea otras y vuelve a interpretar: misma partitura, otra obra.',6500);
+  });
+  $('#rNuevas').addEventListener('click',()=>{ sortea(); toast('Ocho frecuencias nuevas.'); });
+  sortea(); refresca();
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   3 · COMPOSICIÓN LIBRE
+   ══════════════════════════════════════════════════════════════ */
+const PERF_M=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88];
+const PERF_m=[6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+function correlacion(a,b){
+  const n=a.length, ma=a.reduce((x,y)=>x+y,0)/n, mb=b.reduce((x,y)=>x+y,0)/n;
+  let sn=0,sa=0,sb=0;
+  for(let i=0;i<n;i++){ const da=a[i]-ma, db=b[i]-mb; sn+=da*db; sa+=da*da; sb+=db*db; }
+  return (sa&&sb)? sn/Math.sqrt(sa*sb) : 0;
+}
+function ajusteTonal(hist){
+  let mejor=-2, tipo='', tono=0;
+  for(let r=0;r<12;r++){
+    const rot=hist.map((_,i)=>hist[mod12(i+r)]);
+    const cM=correlacion(rot,PERF_M), cm=correlacion(rot,PERF_m);
+    if(cM>mejor){mejor=cM;tipo='mayor';tono=r;}
+    if(cm>mejor){mejor=cm;tipo='menor';tono=r;}
+  }
+  return {r:mejor,tipo,tono};
+}
+
+/* ─────────── 3.1 · el lienzo ─────────── */
+(function(){
+  const cv=$('#cvRoll'), g=cv.getContext('2d');
+  const COLS=16, FILAS=12, GUT=96;
+  const W=cv.width, H=cv.height;
+  const cw=(W-GUT)/COLS, ch=H/FILAS;
+  const BASE=72;                            // Do5 arriba, cromático hacia abajo
+  const rejilla=Array.from({length:FILAS},()=>new Array(COLS).fill(false));
+  let cursor=-1, pintando=false, valor=true;
+
+  function midiFila(f){ return BASE+11-f; }
+  function dibuja(){
+    g.fillStyle='#07060D'; g.fillRect(0,0,W,H);
+    for(let f=0;f<FILAS;f++){
+      const pc=mod12(midiFila(f));
+      const neg=[1,3,6,8,10].includes(pc);
+      g.fillStyle=neg?'rgba(255,255,255,.022)':'rgba(255,255,255,.045)';
+      g.fillRect(GUT,f*ch,W-GUT,ch);
+      g.fillStyle='rgba(214,216,230,.62)';
+      g.font='600 14px Futura,"Avenir Next",Helvetica,sans-serif';
+      g.textAlign='right'; g.textBaseline='middle';
+      g.fillText(NOM[pc], GUT-14, f*ch+ch/2);
+    }
+    g.strokeStyle='rgba(140,140,180,.16)'; g.lineWidth=1;
+    for(let c=0;c<=COLS;c++){ const x=GUT+c*cw; g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
+    for(let f=0;f<=FILAS;f++){ g.beginPath(); g.moveTo(GUT,f*ch); g.lineTo(W,f*ch); g.stroke(); }
+    if(cursor>=0){ g.fillStyle='rgba(245,194,100,.10)'; g.fillRect(GUT+cursor*cw,0,cw,H); }
+    for(let f=0;f<FILAS;f++) for(let c=0;c<COLS;c++) if(rejilla[f][c]){
+      const x=GUT+c*cw+3, y=f*ch+3, w=cw-6, h=ch-6;
+      const act=(c===cursor);
+      const gr=g.createLinearGradient(x,y,x,y+h);
+      if(act){ gr.addColorStop(0,'#FFE7B0'); gr.addColorStop(1,'#E0A03A'); }
+      else { gr.addColorStop(0,'#C9A6F8'); gr.addColorStop(1,'#7C55C0'); }
+      g.fillStyle=gr; g.beginPath(); g.roundRect(x,y,w,h,4); g.fill();
+      if(act){ g.strokeStyle='rgba(255,240,200,.9)'; g.lineWidth=2; g.stroke(); }
+    }
+  }
+  function pos(e){
+    const r=cv.getBoundingClientRect();
+    const px=(e.clientX-r.left)*(W/r.width), py=(e.clientY-r.top)*(H/r.height);
+    if(px<GUT) return null;
+    const c=Math.floor((px-GUT)/cw), f=Math.floor(py/ch);
+    if(c<0||c>=COLS||f<0||f>=FILAS) return null;
+    return {c,f};
+  }
+  function toca(f){ nota(midiFila(f),0,.5,{timbre:$('#lTimbre').value,gain:1}); }
+  cv.addEventListener('pointerdown',e=>{
+    const p=pos(e); if(!p) return; ac();
+    pintando=true; valor=!rejilla[p.f][p.c];
+    rejilla[p.f][p.c]=valor; if(valor) toca(p.f);
+    cv.setPointerCapture(e.pointerId); dibuja(); cuentas();
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!pintando) return; const p=pos(e); if(!p) return;
+    if(rejilla[p.f][p.c]!==valor){ rejilla[p.f][p.c]=valor; if(valor) toca(p.f); dibuja(); cuentas(); }
+  });
+  cv.addEventListener('pointerup',()=>pintando=false);
+  cv.addEventListener('pointercancel',()=>pintando=false);
+
+  function histo(){
+    const h=new Array(12).fill(0);
+    for(let f=0;f<FILAS;f++) for(let c=0;c<COLS;c++) if(rejilla[f][c]) h[mod12(midiFila(f))]++;
+    return h;
+  }
+  function cuentas(){
+    const h=histo(), tot=h.reduce((a,b)=>a+b,0), dist=h.filter(x=>x>0).length;
+    $('#lDistintas').textContent=dist+' sonido'+(dist===1?'':'s')+' distinto'+(dist===1?'':'s');
+    $('#lRepes').textContent=Math.max(0,tot-dist)+' repeticiones';
+    const v=$('#lVeredicto');
+    if(tot<6){ v.textContent='—'; v.style.color=''; return; }
+    const a=ajusteTonal(h);
+    if(a.r>.62){ v.textContent='suena tonal · '+NOM[a.tono]+' '+a.tipo; v.style.color='var(--amber)'; }
+    else if(a.r>.40){ v.textContent='a medio camino'; v.style.color='var(--cian)'; }
+    else { v.textContent='sin centro · atonal'; v.style.color='var(--viol)'; }
+  }
+  let lazo=null;
+  function para(){ clearInterval(lazo); lazo=null; cursor=-1; dibuja();
+    $('#lPlay').textContent='▶ Escuchar'; $('#lPlay').classList.remove('on'); }
+  PARADAS.push(para);
+  $('#lPlay').addEventListener('click',()=>{
+    if(lazo){ para(); return; }
+    ac(); cursor=-1;
+    $('#lPlay').textContent='■ Parar'; $('#lPlay').classList.add('on');
+    lazo=setInterval(()=>{
+      cursor=(cursor+1)%COLS;
+      for(let f=0;f<FILAS;f++) if(rejilla[f][cursor]) nota(midiFila(f),0,.42,{timbre:$('#lTimbre').value,gain:.9});
+      dibuja();
+    },300);
+    temporizadores.push(lazo);
+  });
+  $('#lBorra').addEventListener('click',()=>{
+    for(let f=0;f<FILAS;f++) rejilla[f].fill(false); dibuja(); cuentas();
+  });
+  $('#lAzar').addEventListener('click',()=>{
+    for(let f=0;f<FILAS;f++) rejilla[f].fill(false);
+    for(let c=0;c<COLS;c++){ const n=azarI(0,2); for(let k=0;k<n;k++) rejilla[azarI(0,FILAS-1)][c]=true; }
+    dibuja(); cuentas();
+  });
+  /* semilla de ejemplo */
+  [[0,0],[4,1],[9,2],[2,3],[7,5],[11,6],[5,7],[1,9],[8,10],[3,11],[10,13],[6,14]].forEach(p=>rejilla[p[0]][p[1]]=true);
+  dibuja(); cuentas();
+})();
+
+/* ─────────── 3.2 · gestos de la Sequenza III ─────────── */
+(function(){
+  const ESTADOS=[
+    {n:'distante',  f:[220,240], forms:[420,1100], ruido:.05, vel:1.5, trem:0,  g:.5},
+    {n:'tenso',     f:[300,470], forms:[700,1900], ruido:.10, vel:.55, trem:11, g:.9},
+    {n:'urgente',   f:[330,560], forms:[820,2100], ruido:.16, vel:.25, trem:0,  g:1.0},
+    {n:'soñador',   f:[280,300], forms:[500,1250], ruido:.04, vel:2.2, trem:5,  g:.55},
+    {n:'jadeante',  f:[200,240], forms:[600,1500], ruido:.55, vel:.18, trem:0,  g:.8},
+    {n:'risueño',   f:[380,700], forms:[900,2400], ruido:.12, vel:.30, trem:14, g:.85}
+  ];
+  const cont=$('#estados');
+  ESTADOS.forEach(e=>{
+    const b=document.createElement('button'); b.className='btn sm ghost'; b.textContent=e.n;
+    b.addEventListener('click',()=>{ pararTodo(); gesto(e); });
+    cont.appendChild(b);
+  });
+  function gesto(e){
+    const C=ac(), t0=C.currentTime+.03;
+    const dur=e.vel*azar(1.6,2.4)+.5;
+    const osc=C.createOscillator(); osc.type='sawtooth';
+    const f0=azar(e.f[0],e.f[1]), f1=f0*azar(.55,1.9);
+    osc.frequency.setValueAtTime(f0,t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(70,f1),t0+dur*.8);
+    const g0=C.createGain(); g0.gain.value=0;
+    const fa=C.createBiquadFilter(); fa.type='bandpass'; fa.frequency.value=e.forms[0]; fa.Q.value=6;
+    const fb=C.createBiquadFilter(); fb.type='bandpass'; fb.frequency.value=e.forms[1]; fb.Q.value=8;
+    const mez=C.createGain(); mez.gain.value=.55;
+    osc.connect(fa); osc.connect(fb); fa.connect(mez); fb.connect(mez);
+    mez.connect(g0); g0.connect(master);
+    g0.gain.setValueAtTime(0,t0);
+    g0.gain.linearRampToValueAtTime(.30*e.g,t0+ (e.n==='urgente'?.02:.14));
+    g0.gain.setTargetAtTime(0,t0+dur*.55,dur*.22);
+    if(e.trem){
+      const l=C.createOscillator(), lg=C.createGain();
+      l.frequency.value=e.trem; lg.gain.value=.16*e.g;
+      l.connect(lg); lg.connect(g0.gain); l.start(t0); l.stop(t0+dur+.3); reg(l);
+    }
+    osc.start(t0); osc.stop(t0+dur+.3); reg(osc);
+    if(e.ruido>.02) ruido(.03,dur*.9,{frec:e.forms[1],q:1.4,gain:e.ruido*.5,atk:.08,rel:.2});
+    if(e.n==='risueño'){ for(let k=0;k<5;k++) ruido(.12+k*.13,.06,{frec:azar(900,2200),q:7,gain:.20,atk:.005,rel:.03}); }
+    if(e.n==='jadeante'){ for(let k=0;k<6;k++) ruido(.05+k*.22,.13,{frec:azar(500,1400),q:2,gain:.22,atk:.02,rel:.06}); }
+  }
+})();
+
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   4 · SERIALISMO
+   ══════════════════════════════════════════════════════════════ */
+const SERIE_LIBRO=[2,10,7,3,0,8,11,9,6,4,1,5];   // Re Si♭ Sol Mi♭ Do La♭ Si La Sol♭ Mi Re♭ Fa
+let P0=[];
+
+(function(){
+  /* ── 4.1 constructor · teclado ── */
+  const elP=$('#serPiano');
+  const teclas=creaPiano(elP, 60, 1);
+  elP.classList.add('activo');
+  const nums={};
+  Object.keys(teclas).forEach(m=>{ nums[m]=$('.num',teclas[m]); });
+  elP.addEventListener('click',e=>{
+    const t=e.target.closest('[data-m]'); if(!t) return;
+    añade(mod12(+t.dataset.m));
+  });
+
+  function añade(pc){
+    if(P0.length>=12){ toast('La serie ya tiene los doce sonidos. Pulsa <em>Empezar de cero</em>.'); return; }
+    if(P0.includes(pc)){
+      toast('<b>Ese sonido ya ha sonado.</b> Ésa es la regla: ninguno se repite hasta que hayan sonado los doce.');
+      return;
+    }
+    ac(); P0.push(pc); nota(60+pc,0,.7,{timbre:'piano'}); refresca();
+  }
+  function refresca(){
+    for(let pc=0;pc<12;pc++){
+      const t=teclas[60+pc], k=P0.indexOf(pc);
+      t.classList.toggle('elegida',k>=0);
+      nums[60+pc].textContent = k>=0 ? (k+1) : '';
+    }
+    $('#serCuenta').textContent=P0.length+' / 12 sonidos';
+    $('#serHisto').textContent= P0.length===12
+      ? 'reparto perfecto: 1 vez cada nota'
+      : 'faltan '+(12-P0.length)+' sonidos';
+    pintaSerie(); pintaForma(); pintaMatriz();
+  }
+  const cvS=$('#cvSerie');
+  function pintaSerie(res){
+    const s=PENT_S, g=lienzo(cvS,0,s*11.8), W=cvS.LW;
+    g.fillStyle=PAPEL; g.fillRect(0,0,W,cvS.LH);
+    pentagrama(g,{x:s*1.4,y:s*2.5,w:W-s*2.8,s:s,midis:P0.map(p=>60+p),huecos:12,nombres:true,
+      titulo:'P0',colorTitulo:'#2A2438',resalta:res,color:'#7A3FC6',doble:P0.length===12});
+  }
+  $('#serDeshacer').addEventListener('click',()=>{ P0.pop(); refresca(); });
+  $('#serVacia').addEventListener('click',()=>{ P0=[]; refresca(); });
+  $('#serLibro').addEventListener('click',()=>{ P0=SERIE_LIBRO.slice(); refresca();
+    toast('Cargada la serie del libro: <em>Re · Si♭ · Sol · Mi♭ · Do · La♭ · Si · La · Sol♭ · Mi · Re♭ · Fa</em>. Fíjate: empieza con una cadena de terceras descendentes.'); });
+  $('#serAzar').addEventListener('click',()=>{
+    P0=[0,1,2,3,4,5,6,7,8,9,10,11].sort(()=>Math.random()-.5); refresca(); });
+
+  $('#serPlay').addEventListener('click',()=>{
+    if(P0.length<2) return; pararTodo(); ac();
+    let t=.05;
+    P0.forEach((pc,i)=>{
+      nota(60+pc,t,.62,{timbre:'piano',gain:.9});
+      tempo(()=>pintaSerie(i),t*1000);
+      t+=.48;
+    });
+    tempo(()=>pintaSerie(),t*1000+250);
+  });
+
+  /* ── 4.2 las cuatro formas ── */
+  let forma='P', trans=0;
+  const EXPL={
+    P:'<em>Principal.</em> La serie tal como la escribiste. Transportarla es sumarle semitonos a todas las notas a la vez: sumando 5 obtienes la P5, que es la misma serie una cuarta justa más aguda. Ahí tienes ya <b>12 variaciones</b>, de P0 a P11.',
+    R:'<em>Retrógrada.</em> La serie al revés, rebobinada como una cinta: la última nota pasa a ser la primera. Las líneas que unen los dos pentagramas se cruzan formando una X. Y también se puede transportar: R0, R1, R2… <b>otras 12</b>.',
+    I:'<em>Inversión.</em> La volteamos verticalmente. Se analiza el intervalo entre cada nota y se le cambia la dirección: todo lo que sube ha de bajar. Si de Re a Si♭ había una 6ª menor ascendente (4 tonos), ahora es descendente y da Sol♭. La octava en que la coloques da igual. <b>Otras 12</b>.',
+    RI:'<em>Retrógrada de la inversión.</em> Las dos operaciones a la vez. Solo hace falta saber que existe. Con ella se completan las <b>48 variaciones</b>.'
+  };
+  function serieDe(f,n){
+    if(P0.length<12) return [];
+    const p=P0.map(x=>mod12(x+n));
+    if(f==='P') return p;
+    if(f==='R') return p.slice().reverse();
+    const inv=P0.map(x=>mod12(2*P0[0]-x+n));
+    if(f==='I') return inv;
+    return inv.slice().reverse();
+  }
+  const cvF=$('#cvForma');
+  let anim=null, animT=0;
+  function pintaForma(res){
+    const s=PENT_S, gF=lienzo(cvF,0,s*19.4), LW=cvF.LW, W=LW-s*2.6;
+    const yA0=s*2.2, yB0=s*11.9, X=s*1.3;
+    gF.fillStyle=PAPEL; gF.fillRect(0,0,LW,cvF.LH);
+    pentagrama(gF,{x:X,y:yA0,w:W,s:s,midis:P0.map(p=>60+p),huecos:12,titulo:'P0',
+      colorTitulo:'rgba(30,26,44,.5)',tinta:'rgba(30,26,44,.42)'});
+    const ser=serieDe(forma,trans);
+    pentagrama(gF,{x:X,y:yB0,w:W,s:s,midis:ser.map(p=>60+p),huecos:12,nombres:false,
+      titulo:etiqueta(),colorTitulo:'#7A3FC6',resalta:res,color:'#7A3FC6'});
+    if(anim!==null && P0.length===12){
+      const n=12, x0=X+s*3.9, x1=X+W-s*2.7, dx=(x1-x0)/(n-1);
+      gF.save(); gF.lineWidth=1.6;
+      for(let i=0;i<n;i++){
+        if(i>anim) break;
+        const destino=(forma==='R'||forma==='RI')?(n-1-i):i;
+        const yA=yA0+4*s-(pasoDe(60+P0[i])-30)*(s/2);
+        const yB=yB0+4*s-(pasoDe(60+ser[destino])-30)*(s/2);
+        const p=(i===anim)?animT:1;
+        gF.strokeStyle='rgba(122,63,198,'+(.20+(i===anim?.55:.16))+')';
+        gF.beginPath(); gF.moveTo(x0+i*dx,yA+s*.7);
+        gF.lineTo(x0+i*dx+(x0+destino*dx-(x0+i*dx))*p, yA+s*.7+(yB-s*.7-(yA+s*.7))*p);
+        gF.stroke();
+      }
+      gF.restore();
+    }
+  }
+  function etiqueta(){ return forma+trans; }
+  function refrescaForma(){
+    $('#vTrans').textContent=trans+' · '+etiqueta();
+    $('#formaExpl').innerHTML=EXPL[forma];
+    $$('#formaBtns .btn').forEach(b=>b.classList.toggle('sel',b.dataset.f===forma));
+    pintaForma(); marcaMatriz();
+  }
+  $$('#formaBtns .btn').forEach(b=>b.addEventListener('click',()=>{ forma=b.dataset.f; anim=null; refrescaForma(); }));
+  $('#sTrans').addEventListener('input',e=>{ trans=+e.target.value; anim=null; refrescaForma(); });
+  function tocaSerie(ser,timbre,t0,cb){
+    let t=t0||.05;
+    ser.forEach((pc,i)=>{
+      nota(60+pc,t,.55,{timbre:timbre||'piano',gain:.9});
+      tempo(()=>{ pintaForma(i); resaltaCelda(i); },t*1000);
+      t+=.40;
+    });
+    tempo(()=>{ pintaForma(); resaltaCelda(null); if(cb)cb(); },t*1000+220);
+    return t;
+  }
+  $('#formaPlay').addEventListener('click',()=>{ if(P0.length<12)return; pararTodo(); ac(); tocaSerie(serieDe(forma,trans)); });
+  $('#formaComp').addEventListener('click',()=>{
+    if(P0.length<12)return; pararTodo(); ac();
+    let t=.05;
+    P0.forEach(pc=>{ nota(60+pc,t,.5,{timbre:'piano',gain:.6}); t+=.4; });
+    t+=.5; tocaSerie(serieDe(forma,trans),'cuerda',t);
+  });
+  $('#formaAnim').addEventListener('click',()=>{
+    if(P0.length<12)return;
+    anim=0; animT=0;
+    (function paso(){
+      animT+=.12;
+      if(animT>=1){ animT=0; anim++; if(anim>=12){ anim=11; animT=1; pintaForma(); return; } }
+      pintaForma(); requestAnimationFrame(paso);
+    })();
+  });
+
+  /* ── la matriz ── */
+  const tabla=$('#matriz');
+  function pintaMatriz(){
+    tabla.innerHTML='';
+    if(P0.length<12){ tabla.innerHTML='<tr><td style="border:0;padding:14px;color:#6A6478">Completa los doce sonidos y aparecerá la matriz.</td></tr>'; return; }
+    const M=[];
+    for(let i=0;i<12;i++){ const f=[]; for(let j=0;j<12;j++) f.push(mod12(P0[j]+P0[0]-P0[i])); M.push(f); }
+    const etP=M.map(f=>mod12(f[0]-P0[0]));
+    const etI=M[0].map(v=>mod12(v-P0[0]));
+    const et=(l,n)=>l+'<sub>'+n+'</sub>';
+    let h='<tr><th></th>';
+    for(let j=0;j<12;j++) h+='<th data-f="I" data-t="'+etI[j]+'" data-col="'+j+'">'+et('I',etI[j])+'</th>';
+    h+='<th></th></tr>';
+    for(let i=0;i<12;i++){
+      h+='<tr data-fila="'+i+'"><th data-f="P" data-t="'+etP[i]+'" data-fil="'+i+'">'+et('P',etP[i])+'</th>';
+      for(let j=0;j<12;j++) h+='<td'+(i===j?' class="diag"':'')+' data-i="'+i+'" data-j="'+j+'">'+NOM[M[i][j]]+'</td>';
+      h+='<th data-f="R" data-t="'+etP[i]+'" data-fil="'+i+'">'+et('R',etP[i])+'</th></tr>';
+    }
+    h+='<tr><th></th>';
+    for(let j=0;j<12;j++) h+='<th data-f="RI" data-t="'+etI[j]+'" data-col="'+j+'">'+et('RI',etI[j])+'</th>';
+    h+='<th></th></tr>';
+    tabla.innerHTML=h;
+    marcaMatriz();
+    $$('#matriz th[data-f]').forEach(th=>th.addEventListener('click',()=>{
+      forma=th.dataset.f; trans=+th.dataset.t;
+      $('#sTrans').value=trans; anim=null; refrescaForma();
+      pararTodo(); ac(); tocaSerie(serieDe(forma,trans),'piano');
+    }));
+  }
+  function marcaMatriz(){
+    if(P0.length<12) return;
+    $$('#matriz td').forEach(td=>td.classList.remove('act','suena'));
+    $$('#matriz th').forEach(th=>th.classList.remove('act'));
+    $$('#matriz tr').forEach(tr=>tr.classList.remove('act'));
+    const th=$('#matriz th[data-f="'+forma+'"][data-t="'+trans+'"]');
+    if(!th) return;
+    th.classList.add('act');
+    if(forma==='P'||forma==='R'){
+      const fil=+th.dataset.fil;
+      const tr=$('#matriz tr[data-fila="'+fil+'"]');
+      if(tr) tr.classList.add('act');
+    } else {
+      const col=+th.dataset.col;
+      $$('#matriz td[data-j="'+col+'"]').forEach(td=>td.classList.add('act'));
+    }
+  }
+  function resaltaCelda(k){
+    if(P0.length<12) return;
+    $$('#matriz td.suena').forEach(td=>td.classList.remove('suena'));
+    if(k==null) return;
+    const th=$('#matriz th[data-f="'+forma+'"][data-t="'+trans+'"]');
+    if(!th) return;
+    let td=null;
+    if(forma==='P')      td=$('#matriz td[data-i="'+th.dataset.fil+'"][data-j="'+k+'"]');
+    else if(forma==='R') td=$('#matriz td[data-i="'+th.dataset.fil+'"][data-j="'+(11-k)+'"]');
+    else if(forma==='I') td=$('#matriz td[data-i="'+k+'"][data-j="'+th.dataset.col+'"]');
+    else                 td=$('#matriz td[data-i="'+(11-k)+'"][data-j="'+th.dataset.col+'"]');
+    if(td) td.classList.add('suena');
+  }
+
+  /* ── 4.3 serialismo integral ── */
+  const PARAM=[
+    {k:'alt',n:'Altura',   d:'qué nota suena'},
+    {k:'dur',n:'Duración', d:'cuánto dura'},
+    {k:'int',n:'Intensidad',d:'cómo de fuerte'},
+    {k:'tim',n:'Timbre',   d:'con qué color'}
+  ];
+  const on={alt:true,dur:false,int:false,tim:false};
+  let sDur=[0,3,1,5,2,4,0,2,5,1,3,4].map(i=>[.18,.26,.36,.5,.72,1.0][i]);
+  let sInt=[5,1,3,0,4,2,5,3,1,4,0,2].map(i=>[.28,.42,.55,.7,.85,1][i]);
+  let sTim=[0,2,1,3,2,0,3,1,0,2,3,1].map(i=>['cuerda','pizz','viento','campana'][i]);
+  const swBox=$('#integralSw');
+  PARAM.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='card'; d.style.margin='0'; d.style.cursor='pointer'; d.style.textAlign='center';
+    d.innerHTML='<div style="font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:calc(var(--fs)*.92)">'+p.n+'</div>'+
+      '<div class="note" style="margin:4px 0 8px">'+p.d+'</div>'+
+      '<div class="pill" style="font-size:calc(var(--fs)*.86)">—</div>';
+    d.addEventListener('click',()=>{ on[p.k]=!on[p.k]; pintaSw(); });
+    swBox.appendChild(d); p.el=d;
+  });
+  function pintaSw(){
+    PARAM.forEach(p=>{
+      const act=on[p.k], pill=p.el.querySelector('.pill');
+      pill.textContent=act?'seriado':'libre';
+      pill.style.color=act?'var(--viol)':'var(--dim)';
+      pill.style.borderColor=act?'rgba(185,140,245,.5)':'var(--rule)';
+      p.el.style.borderColor=act?'rgba(185,140,245,.45)':'rgba(140,135,185,.16)';
+      p.el.style.boxShadow=act?'0 0 22px rgba(139,95,214,.16)':'';
+    });
+    const n=Object.values(on).filter(Boolean).length;
+    $('#intLbl').textContent = n===4?'Serialismo integral · las cuatro series'
+      : (on.alt&&n===1)?'Dodecafonismo · solo alturas'
+      : n===0?'Nada seriado · azar puro' : n+' parámetros seriados';
+    pintaInt();
+  }
+  const cvI=$('#cvIntegral'), gI=cvI.getContext('2d');
+  let intRes=-1;
+  function pintaInt(){
+    const W=cvI.width,H=cvI.height; gI.clearRect(0,0,W,H);
+    const mx=118, lane=(H-30)/4, cw=(W-mx-18)/12;
+    PARAM.forEach((p,r)=>{
+      const y=18+r*lane, act=on[p.k];
+      gI.fillStyle=act?'rgba(214,216,230,.9)':'rgba(140,140,180,.45)';
+      gI.font='600 13px Futura,"Avenir Next",Helvetica,sans-serif';
+      gI.textAlign='right'; gI.textBaseline='middle';
+      gI.fillText(p.n.toUpperCase(), mx-14, y+lane/2);
+      for(let i=0;i<12;i++){
+        const x=mx+i*cw+2, w=cw-4;
+        let v=.5, txt='';
+        if(p.k==='alt'){ v=(P0[i]||0)/11; txt=NOMC[P0[i]||0]; }
+        if(p.k==='dur'){ v=sDur[i]/1.0; txt=sDur[i].toFixed(2); }
+        if(p.k==='int'){ v=sInt[i]; txt=['ppp','pp','p','mf','f','ff'][Math.round(v*5)]; }
+        if(p.k==='tim'){ v=['cuerda','pizz','viento','campana'].indexOf(sTim[i])/3; txt=sTim[i].slice(0,4); }
+        const h=Math.max(5,(lane-16)*(act?(.25+v*.75):.20));
+        const yy=y+lane-10-h;
+        gI.fillStyle= act? (i===intRes?'#FFE7B0':'rgba(185,140,245,.75)') : 'rgba(140,140,180,.20)';
+        gI.beginPath(); gI.roundRect(x,yy,w,h,3); gI.fill();
+        if(act){ gI.fillStyle='rgba(230,225,245,.72)'; gI.font='9px ui-monospace,Menlo,monospace';
+          gI.textAlign='center'; gI.fillText(txt,x+w/2,y+lane-3); }
+      }
+    });
+  }
+  function tocaIntegral(){
+    if(P0.length<12){ toast('Completa la serie primero.'); return; }
+    pararTodo(); ac(); let t=.05;
+    for(let i=0;i<12;i++){
+      const pc=on.alt?P0[i]:azarI(0,11);
+      const d =on.dur?sDur[i]:.42;
+      const g =on.int?sInt[i]:.8;
+      const tb=on.tim?sTim[i]:'viento';
+      nota(60+pc+(on.alt?0:0), t, Math.max(.14,d*1.25), {timbre:tb,gain:g*1.15});
+      const ii=i; tempo(()=>{ intRes=ii; pintaInt(); }, t*1000);
+      t+=Math.max(.2,d)+.06;
+    }
+    tempo(()=>{ intRes=-1; pintaInt(); }, t*1000+200);
+  }
+  $('#intPlay').addEventListener('click',tocaIntegral);
+  $('#intSoloAlt').addEventListener('click',()=>{ on.alt=true;on.dur=on.int=on.tim=false; pintaSw(); tocaIntegral(); });
+  $('#intTodo').addEventListener('click',()=>{ on.alt=on.dur=on.int=on.tim=true; pintaSw(); tocaIntegral();
+    toast('Cada nota tiene ahora <b>cuatro</b> decisiones tomadas por cuatro series distintas. Bastante loco.'); });
+  $('#intBaraja').addEventListener('click',()=>{
+    sDur=sDur.sort(()=>Math.random()-.5); sInt=sInt.sort(()=>Math.random()-.5); sTim=sTim.sort(()=>Math.random()-.5);
+    pintaInt();
+  });
+
+  refresca(); refrescaForma(); pintaSw(); pintaMatriz();
+  REDIBUJOS.push(()=>{ pintaSerie(); pintaForma(); });
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   5 · MÚSICA ESTOCÁSTICA
+   ══════════════════════════════════════════════════════════════ */
+function rnd32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function poisson(l){ const L=Math.exp(-l); let k=0,p=1;
+  do{ k++; p*=Math.random(); }while(p>L); return k-1; }
+
+/* ─────────── 5.1 · la piedra ─────────── */
+(function(){
+  const cv=$('#cvPiedra'), g=cv.getContext('2d');
+  const DATOS=[
+    {k:'cuarzo', n:'Composición', u:'% de cuarzo', min:5,  max:88,  dec:0},
+    {k:'peso',   n:'Peso',        u:'g',           min:60, max:1400,dec:0},
+    {k:'temp',   n:'Temperatura', u:'°C',          min:3,  max:34,  dec:1},
+    {k:'dens',   n:'Densidad',    u:'g/cm³',       min:1.9,max:3.4, dec:2},
+    {k:'rug',    n:'Rugosidad',   u:'/100',        min:0,  max:100, dec:0}
+  ];
+  const PARAMS=[['altura','Altura'],['registro','Registro'],['intens','Intensidad'],
+                ['dur','Duración'],['densidad','Densidad de notas'],['timbre','Timbre']];
+  const asign={cuarzo:'timbre',peso:'altura',temp:'densidad',dens:'dur',rug:'intens'};
+  /* el porqué de cada correspondencia: sin criterio esto no es composición, es capricho */
+  const PORQUE={
+    cuarzo:'el mineral es de qué está hecha → el timbre es de qué está hecho el sonido',
+    peso:  'cuanto más pesa, más grave (poco cuarzo → cuerda; mucho → campana)',
+    temp:  'la temperatura es agitación → más caliente, más notas por segundo',
+    dens:  'lo denso está apretado → más densa, notas más largas y compactas',
+    rug:   'lo rugoso raspa → más rugosa, más fuerte'
+  };
+  let semilla=0, medida=null, analizada=false;
+
+  function nuevaPiedra(){
+    semilla=azarI(1,999999); analizada=false; medida=null;
+    $('#piLbl').textContent='Piedra nº '+semilla;
+    $('#piSonar').disabled=true;
+    $('#piDatos').innerHTML='<p class="note">Sin analizar.</p>';
+    $('#piMsg').innerHTML='Pulsa <em>Analizar</em> para medirla.';
+    dibuja();
+  }
+  function mide(){
+    const r=rnd32(semilla); const m={};
+    DATOS.forEach(d=>{ m[d.k]=d.min+r()*(d.max-d.min); });
+    return m;
+  }
+  function dibuja(){
+    const W=cv.width,H=cv.height, r=rnd32(semilla);
+    g.clearRect(0,0,W,H);
+    /* suelo */
+    const sg=g.createLinearGradient(0,H*.55,0,H);
+    sg.addColorStop(0,'rgba(185,140,245,.05)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=sg; g.fillRect(0,H*.55,W,H*.45);
+    const cx=W/2, cy=H*.53, R=Math.min(W,H)*.355;
+    const N=azarI(9,9), pts=[];
+    const nn=9+Math.floor(r()*4);
+    const fase=r()*6.28, rug=.14+r()*.30;
+    for(let i=0;i<nn;i++){
+      const a=fase+i/nn*Math.PI*2;
+      const rr=R*(.72+r()*rug+ .18*Math.sin(a*3+fase));
+      pts.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr*.82]);
+    }
+    /* sombra */
+    g.save(); g.filter='blur(14px)'; g.fillStyle='rgba(0,0,0,.55)';
+    g.beginPath(); g.ellipse(cx,cy+R*.72,R*.95,R*.20,0,0,7); g.fill(); g.restore();
+    /* cuerpo */
+    g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<=nn;i++){
+      const p=pts[i%nn], q=pts[(i+1)%nn];
+      g.quadraticCurveTo(p[0],p[1],(p[0]+q[0])/2,(p[1]+q[1])/2);
+    }
+    g.closePath();
+    const tono=180+Math.floor(r()*90);
+    const gr=g.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+    gr.addColorStop(0,'hsl('+tono+',10%,52%)');
+    gr.addColorStop(.5,'hsl('+tono+',12%,34%)');
+    gr.addColorStop(1,'hsl('+tono+',10%,18%)');
+    g.fillStyle=gr; g.fill();
+    g.strokeStyle='rgba(0,0,0,.5)'; g.lineWidth=2; g.stroke();
+    /* vetas y motas */
+    g.save(); g.clip();
+    for(let i=0;i<7;i++){
+      g.strokeStyle='rgba(255,255,255,'+(.03+r()*.07)+')'; g.lineWidth=1+r()*7;
+      g.beginPath();
+      const x0=cx-R+r()*R*2, y0=cy-R+r()*R*2;
+      g.moveTo(x0,y0);
+      g.bezierCurveTo(x0+r()*R,y0-R*.4+r()*R*.8, x0+R*.6,y0+R*.3, x0+R*1.4,y0+r()*R*.6);
+      g.stroke();
+    }
+    for(let i=0;i<170;i++){
+      const a=r()*6.28, rr=Math.sqrt(r())*R*.95;
+      g.fillStyle='rgba(255,255,255,'+(r()*.16)+')';
+      g.beginPath(); g.arc(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr*.82,.6+r()*2.1,0,7); g.fill();
+    }
+    /* brillo */
+    const hg=g.createRadialGradient(cx-R*.32,cy-R*.38,2,cx-R*.32,cy-R*.38,R*.85);
+    hg.addColorStop(0,'rgba(255,255,255,.20)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=hg; g.fillRect(cx-R*1.4,cy-R*1.4,R*2.8,R*2.8);
+    g.restore();
+    if(analizada && medida){
+      g.strokeStyle='rgba(185,140,245,.75)'; g.lineWidth=1; g.setLineDash([4,4]);
+      g.beginPath(); g.arc(cx,cy,R*1.12,0,7); g.stroke(); g.setLineDash([]);
+      g.fillStyle='rgba(185,140,245,.9)'; g.font='11px ui-monospace,Menlo,monospace';
+      g.textAlign='left';
+      DATOS.forEach((d,i)=>{
+        const y=48+i*18;
+        g.fillText(d.n.toUpperCase()+'  '+medida[d.k].toFixed(d.dec)+' '+d.u, 16, y);
+      });
+    }
+  }
+  function pintaDatos(){
+    const box=$('#piDatos'); box.innerHTML='';
+    DATOS.forEach(d=>{
+      const row=document.createElement('div');
+      row.className='row'; row.style.gap='8px'; row.style.marginBottom='6px';
+      row.style.flexWrap='nowrap';
+      row.innerHTML='<span class="note" style="flex:0 0 8.2em">'+d.n+'</span>'+
+        '<span class="pill" style="flex:0 0 6.4em;text-align:center">'+medida[d.k].toFixed(d.dec)+' '+d.u+'</span>'+
+        '<span class="note" style="flex:0 0 1.2em;text-align:center">→</span>';
+      const sel=document.createElement('select'); sel.className='sel'; sel.style.flex='1';
+      PARAMS.forEach(p=>{ const o=document.createElement('option'); o.value=p[0]; o.textContent=p[1];
+        if(asign[d.k]===p[0]) o.selected=true; sel.appendChild(o); });
+      sel.addEventListener('change',()=>{ asign[d.k]=sel.value; pintaDatos(); });
+      row.appendChild(sel);
+      const bloque=document.createElement('div'); bloque.style.marginBottom='10px';
+      bloque.appendChild(row);
+      const why=document.createElement('div'); why.className='note';
+      why.style.cssText='margin:2px 0 0 8.4em;font-style:italic;opacity:.85';
+      why.textContent = (asign[d.k]===({cuarzo:'timbre',peso:'altura',temp:'densidad',dens:'dur',rug:'intens'})[d.k])
+        ? PORQUE[d.k] : 'correspondencia tuya: decide qué relación tiene sentido y explícala';
+      bloque.appendChild(why);
+      box.appendChild(bloque);
+    });
+  }
+  function norm(k){ const d=DATOS.find(x=>x.k===k); return clamp((medida[k]-d.min)/(d.max-d.min),0,1); }
+  function suena(){
+    pararTodo(); ac();
+    const val={};
+    Object.keys(asign).forEach(k=>{ val[asign[k]]=norm(k); });
+    const alt = val.altura==null?.5:val.altura;
+    const reg = val.registro==null?.5:val.registro;
+    const ints= val.intens==null?.6:val.intens;
+    const dur = val.dur==null?.5:val.dur;
+    const den = val.densidad==null?.5:val.densidad;
+    const tim = val.timbre==null?.5:val.timbre;
+    const timbres=['campana','cuerda','pizz','viento','metal'];
+    const tb=timbres[Math.min(4,Math.floor(tim*5))];
+    const base=Math.round(78-alt*32);
+    const amb=Math.round(6+reg*30);
+    const n=Math.round(8+den*46);
+    const TOT=7.2;
+    const r=rnd32(semilla*7+13);
+    for(let i=0;i<n;i++){
+      const t=(i/n)*TOT + (r()-.5)*.12;
+      const m=clamp(base+Math.round((r()-.5)*amb),34,96);
+      nota(m,Math.max(.02,t),.12+dur*1.5,{timbre:tb,gain:.35+ints*.9,pan:(r()-.5)*1.6});
+    }
+    $('#piMsg').innerHTML='Suena la piedra nº <b>'+semilla+'</b> con timbre <em>'+tb+'</em>, '+n+' acontecimientos. '+
+      'Vuelve a pulsar: <u>idéntico</u>, porque los datos no han cambiado. Cambia una correspondencia y vuelve a sonar.';
+  }
+  $('#piCoge').addEventListener('click',nuevaPiedra);
+  $('#piAnaliza').addEventListener('click',()=>{
+    medida=mide(); analizada=true; pintaDatos(); dibuja();
+    $('#piSonar').disabled=false;
+    $('#piMsg').innerHTML='Cada dato lleva ya una correspondencia <b>razonada</b> —en cursiva, debajo—. Eso es lo importante: el compositor no asigna al tuntún, <u>declara un criterio</u> y luego lo respeta. Cámbialas si se te ocurre uno mejor y vuelve a sonar.';
+    for(let i=0;i<5;i++) ruido(i*.09,.07,{frec:600+i*420,q:9,gain:.13});
+  });
+  $('#piSonar').addEventListener('click',suena);
+  nuevaPiedra();
+})();
+
+/* ─────────── 5.2 · el gas de Pithoprakta ─────────── */
+(function(){
+  const cv=$('#cvGas'), g=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  let N=46, T=35, REG=36, mols=[], raf=null, sonando=false, x=0, tickAudio=0;
+  const traza=document.createElement('canvas'); traza.width=W; traza.height=H;
+  const gt=traza.getContext('2d');
+
+  function crea(){
+    mols=[]; const c=62;
+    for(let i=0;i<N;i++) mols.push({p:c+(Math.random()-.5)*REG*.30, v:gauss()*.05, ant:null});
+  }
+  function limpia(){ gt.clearRect(0,0,W,H); x=0; }
+  function ypitch(p){ const lo=62-REG/2, hi=62+REG/2; return H-((p-lo)/(hi-lo))*(H-24)-12; }
+
+  function paso(){
+    const dx=1.6, sigma=0.010+(T/100)*0.105;
+    gt.globalCompositeOperation='source-over';
+    mols.forEach((m,i)=>{
+      const y0=ypitch(m.p);
+      m.v = m.v*0.945 + gauss()*sigma;
+      m.p = m.p + m.v;
+      const lo=62-REG/2, hi=62+REG/2;
+      if(m.p<lo){ m.p=lo+(lo-m.p)*.4; m.v=Math.abs(m.v); }
+      if(m.p>hi){ m.p=hi-(m.p-hi)*.4; m.v=-Math.abs(m.v); }
+      const y1=ypitch(m.p);
+      const h=(i/N)*300;
+      if(i===0){ gt.strokeStyle='rgba(245,194,100,.95)'; gt.lineWidth=2.0; }
+      else { gt.strokeStyle='hsla('+(268+ (i%7)*8)+',74%,'+(60+Math.abs(m.v)*22)+'%,.62)'; gt.lineWidth=1.15; }
+      gt.beginPath(); gt.moveTo(x,y0); gt.lineTo(x+dx,y1); gt.stroke();
+    });
+    x+=dx;
+    if(x>W){ x=0; gt.globalCompositeOperation='source-over'; gt.fillStyle='rgba(4,3,9,.82)'; gt.fillRect(0,0,W,H); }
+    /* audio */
+    tickAudio++;
+    if(sonando && tickAudio%22===0){
+      const cuantas=Math.min(N,12);
+      for(let k=0;k<cuantas;k++){
+        const m=mols[Math.floor(Math.random()*mols.length)];
+        const dur=.5+Math.random()*.8;
+        const destino=clamp(m.p+m.v*52,30,100);
+        gliss(Math.round(clamp(m.p,30,100)),Math.round(destino),0,dur,
+          {gain:.32,pan:(Math.random()-.5)*1.7,corte:1300+T*22});
+      }
+    }
+    pinta();
+    raf=requestAnimationFrame(paso);
+  }
+  function pinta(){
+    g.clearRect(0,0,W,H);
+    g.drawImage(traza,0,0);
+    g.strokeStyle='rgba(245,194,100,.55)'; g.lineWidth=1.2;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke();
+    mols.forEach((m,i)=>{
+      const y=ypitch(m.p);
+      g.beginPath(); g.arc(x,y,i===0?3.4:2.1,0,7);
+      g.fillStyle= i===0?'#FFD98A':'rgba(245,235,255,.9)'; g.fill();
+    });
+    /* rejilla de referencia */
+    g.strokeStyle='rgba(140,140,180,.12)'; g.lineWidth=1;
+    for(let o=-2;o<=2;o++){ const y=ypitch(62+o*12); g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+  }
+  function etiquetas(){
+    $('#vGasT').textContent= T<20?'fría':T<45?'media':T<75?'caliente':'muy caliente';
+    $('#vGasN').textContent= N+(N===46?' · las cuerdas de Pithoprakta':' moléculas');
+    $('#gasLbl').textContent=N+' moléculas';
+    $('#vGasR').textContent=(REG/12).toFixed(1)+' octavas';
+  }
+  function para(){ sonando=false; $('#gasPlay').textContent='▶ Soltar el gas'; $('#gasPlay').classList.remove('on'); }
+  PARADAS.push(para);
+  $('#gasPlay').addEventListener('click',()=>{
+    if(sonando){ para(); return; }
+    ac(); sonando=true; $('#gasPlay').textContent='■ Silencio'; $('#gasPlay').classList.add('on');
+    toast('Cada línea es <b>una cuerda</b>. Una sola es impredecible; las cuarenta y seis juntas tienen forma. Esa forma es lo que compone Xenakis.',7000);
+  });
+  $('#sGasT').addEventListener('input',e=>{ T=+e.target.value; etiquetas(); });
+  $('#sGasN').addEventListener('input',e=>{ N=+e.target.value; crea(); etiquetas(); });
+  $('#sGasR').addEventListener('input',e=>{ REG=+e.target.value; etiquetas(); });
+  crea(); limpia(); etiquetas(); paso();
+})();
+
+/* ─────────── 5.3 · la mesa de dibujo ─────────── */
+(function(){
+  const cv=$('#cvMesa'), g=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const MLO=40, MHI=92;
+  let lineas=[], grosor=1, DUR=8, inten=.55, trazando=null, cabeza=-1, raf=null;
+  const DIN=['ppp','pp','p','mp','mf','f','ff','fff'];
+  /* el color dice la intensidad, como un mapa de temperatura */
+  function colorInt(v,a){
+    const P=[[0,123,107,232],[.35,79,200,245],[.70,245,194,100],[1,255,90,60]];
+    let i=0; while(i<P.length-2 && v>P[i+1][0]) i++;
+    const t=(v-P[i][0])/(P[i+1][0]-P[i][0]||1);
+    const c=k=>Math.round(P[i][k]+(P[i+1][k]-P[i][k])*clamp(t,0,1));
+    return 'rgba('+c(1)+','+c(2)+','+c(3)+','+(a==null?1:a)+')';
+  }
+
+  const ym=m=>H-((m-MLO)/(MHI-MLO))*(H-30)-15;
+  const my=y=>MLO+((H-15-y)/(H-30))*(MHI-MLO);
+
+  function pinta(){
+    g.clearRect(0,0,W,H);
+    g.strokeStyle='rgba(140,140,180,.13)'; g.lineWidth=1;
+    for(let m=MLO;m<=MHI;m+=12){ const y=ym(m); g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+    for(let i=0;i<=8;i++){ const x=i/8*W; g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
+    lineas.forEach((l,i)=>{
+      const act=(cabeza>=0 && cabeza>=l.x0 && cabeza<=l.x1);
+      const vi=(l.i==null?.55:l.i);
+      g.strokeStyle=colorInt(vi, act? 1 : .5+vi*.35);
+      g.lineWidth= (1+vi*1.8)*(act?2.1:1);
+      if(act){ g.shadowColor=colorInt(vi,.9); g.shadowBlur=12; } else g.shadowBlur=0;
+      g.beginPath(); g.moveTo(l.x0*W,ym(l.m0)); g.lineTo(l.x1*W,ym(l.m1)); g.stroke();
+      g.shadowBlur=0;
+      if(l.gr>1){
+        for(let k=1;k<l.gr;k++){
+          const o=k*1.4;
+          g.strokeStyle=colorInt(vi,.40-k*.02); g.lineWidth=1;
+          g.beginPath();
+          g.moveTo(l.x0*W,ym(l.m0+o)); g.lineTo(l.x1*W,ym(l.m1+o)); g.stroke();
+        }
+      }
+    });
+    if(trazando){
+      g.strokeStyle=colorInt(inten,.9); g.lineWidth=1.8; g.setLineDash([5,4]);
+      g.beginPath(); g.moveTo(trazando.x0*W,ym(trazando.m0)); g.lineTo(trazando.x1*W,ym(trazando.m1)); g.stroke();
+      g.setLineDash([]);
+    }
+    if(cabeza>=0){
+      g.strokeStyle='rgba(245,194,100,.8)'; g.lineWidth=1.5;
+      g.beginPath(); g.moveTo(cabeza*W,0); g.lineTo(cabeza*W,H); g.stroke();
+    }
+    $('#mesaLbl').textContent=lineas.length+' línea'+(lineas.length===1?'':'s')+
+      (grosor>1?(' × '+grosor):'')+' · '+(lineas.length*grosor)+' cuerdas';
+  }
+  function pos(e){
+    const r=cv.getBoundingClientRect();
+    return { x:clamp((e.clientX-r.left)/r.width,0,1), m:clamp(my((e.clientY-r.top)*(H/r.height)),MLO,MHI) };
+  }
+  cv.addEventListener('pointerdown',e=>{
+    ac(); const p=pos(e); trazando={x0:p.x,m0:p.m,x1:p.x,m1:p.m,gr:grosor,i:inten};
+    cv.setPointerCapture(e.pointerId); pinta();
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!trazando) return; const p=pos(e);
+    trazando.x1=p.x; trazando.m1=p.m; pinta();
+  });
+  cv.addEventListener('pointerup',()=>{
+    if(!trazando) return;
+    if(Math.abs(trazando.x1-trazando.x0)<.012) trazando.x1=Math.min(1,trazando.x0+.14);
+    if(trazando.x1<trazando.x0){ const t=trazando.x0; trazando.x0=trazando.x1; trazando.x1=t;
+      const m=trazando.m0; trazando.m0=trazando.m1; trazando.m1=m; }
+    lineas.push(trazando);
+    gliss(Math.round(trazando.m0),Math.round(trazando.m1),0,.7,{gain:.10+inten*.5});
+    trazando=null; pinta();
+  });
+
+  function abanico(){
+    lineas=[]; const n=22;
+    for(let i=0;i<n;i++){
+      const f=i/(n-1);
+      lineas.push({x0:.04,m0:64,x1:.55+f*.42,m1:MLO+2+f*(MHI-MLO-4),gr:grosor,i:.20+f*.72});
+    }
+    pinta();
+  }
+  function parabola(V,P,S,n){
+    const out=[];
+    for(let i=0;i<n;i++){
+      const t=(i+1)/(n+1);
+      const A=[V[0]+(P[0]-V[0])*t, V[1]+(P[1]-V[1])*t];
+      const B=[V[0]+(S[0]-V[0])*(1-t), V[1]+(S[1]-V[1])*(1-t)];
+      const x0=Math.min(A[0],B[0]), x1=Math.max(A[0],B[0]);
+      const m0=A[0]<=B[0]?A[1]:B[1], m1=A[0]<=B[0]?B[1]:A[1];
+      out.push({x0:x0,m0:m0,x1:x1,m1:m1,gr:grosor,i:.18+ (i/(n-1))*.75});
+    }
+    return out;
+  }
+  function reglada(){
+    lineas=parabola([.50,46],[.03,84],[.97,84],24);
+    pinta();
+  }
+  function pabellon(){
+    lineas=parabola([.20,90],[.02,50],[.40,52],15)
+      .concat(parabola([.70,92],[.45,48],[.98,54],15));
+    pinta();
+  }
+  function toca(){
+    if(cabeza>=0){ pararTodo(); return; }
+    pararTodo(); ac();
+    $('#mesaPlay').textContent='■ Parar'; $('#mesaPlay').classList.add('on');
+    const total=lineas.length*grosor;
+    if(total>110) toast('Son muchas cuerdas: se recortan para que no sature.');
+    let n=0;
+    lineas.forEach(l=>{
+      for(let k=0;k<l.gr;k++){
+        if(n++>110) return;
+        const off=k*1.15;
+        const t0=l.x0*DUR, d=Math.max(.25,(l.x1-l.x0)*DUR);
+        gliss(Math.round(l.m0+off),Math.round(l.m1+off),t0,d,
+          {gain:.10+(l.i==null?.55:l.i)*.5,pan:(l.m0-66)/26});
+      }
+    });
+    cabeza=0;
+    const t0=performance.now();
+    cancelAnimationFrame(raf);
+    (function anim(){
+      const e=(performance.now()-t0)/1000;
+      cabeza=e/DUR;
+      if(cabeza>1){ cabeza=-1; pinta(); $('#mesaPlay').textContent='▶ Escuchar'; $('#mesaPlay').classList.remove('on'); return; }
+      pinta(); raf=requestAnimationFrame(anim);
+    })();
+  }
+  PARADAS.push(()=>{ cancelAnimationFrame(raf); cabeza=-1; pinta();
+    const b=$('#mesaPlay'); if(b){ b.textContent='▶ Escuchar'; b.classList.remove('on'); } });
+  $('#mesaPlay').addEventListener('click',toca);
+  $('#mesaBorra').addEventListener('click',()=>{ lineas=[]; pinta(); });
+  $('#mesaAbanico').addEventListener('click',()=>{ abanico();
+    toast('Así arranca <em>Metastasis</em>: todas las cuerdas juntas y luego cada una se va por su lado. Un <b>abanico de glissandi</b>.'); });
+  $('#mesaHaz').addEventListener('click',()=>{ reglada();
+    toast('Ninguna línea está curvada, y sin embargo ves una curva. Eso es una <u>superficie reglada</u>.'); });
+  $('#mesaPab').addEventListener('click',()=>{ pabellon();
+    toast('Con estas mismas familias de rectas Xenakis y Le Corbusier levantaron el <b>Pabellón Philips</b> de la Expo del 58.'); });
+  $('#sMesaG').addEventListener('input',e=>{ grosor=+e.target.value;
+    $('#vMesaG').textContent=grosor+' cuerda'+(grosor===1?'':'s');
+    lineas.forEach(l=>l.gr=grosor); pinta(); });
+  $('#sMesaD').addEventListener('input',e=>{ DUR=+e.target.value; $('#vMesaD').textContent=DUR+' s'; });
+  $('#sMesaI').addEventListener('input',e=>{
+    inten=+e.target.value/100;
+    $('#vMesaI').textContent=DIN[Math.min(7,Math.floor(inten*7.99))];
+    $('#vMesaI').style.color=colorInt(inten);
+    pinta();
+  });
+  abanico();
+  $('#vMesaI').style.color=colorInt(inten);
+})();
+
+/* ─────────── 5.4 · la cuadrícula de Achorripsis ─────────── */
+(function(){
+  const cv=$('#cvPoisson'), g=cv.getContext('2d');
+  const W=cv.width,H=cv.height, COLS=28, FIL=7;
+  const FAM=[['cuerda','cuerda'],['pizz','pizzicato'],['viento','viento'],['metal','metal'],
+             ['campana','percusión'],['organo','órgano'],['cuerpo','graves']];
+  let lam=.6, rej=[], col=-1, lazo=null;
+
+  function reparte(){
+    rej=[];
+    for(let f=0;f<FIL;f++){ const fila=[]; for(let c=0;c<COLS;c++) fila.push(poisson(lam)); rej.push(fila); }
+    pinta(); histo();
+  }
+  function pinta(){
+    g.clearRect(0,0,W,H);
+    const mx=92, my=16, cw=(W-mx-14)/COLS, ch=(H-my-24)/FIL;
+    for(let f=0;f<FIL;f++){
+      g.fillStyle='rgba(214,216,230,.62)'; g.font='600 11px Futura,"Avenir Next",Helvetica,sans-serif';
+      g.textAlign='right'; g.textBaseline='middle';
+      g.fillText(FAM[f][1], mx-10, my+f*ch+ch/2);
+      for(let c=0;c<COLS;c++){
+        const x=mx+c*cw, y=my+f*ch, k=rej[f][c];
+        g.fillStyle= c===col?'rgba(245,194,100,.13)':'rgba(255,255,255,.022)';
+        g.fillRect(x+1,y+1,cw-2,ch-2);
+        g.strokeStyle='rgba(140,140,180,.13)'; g.lineWidth=1; g.strokeRect(x+1,y+1,cw-2,ch-2);
+        for(let i=0;i<Math.min(k,6);i++){
+          const px=x+cw*(.22+.14*i)+2, py=y+ch/2+((i%2)?-4:4);
+          g.beginPath(); g.arc(px,py,2.6,0,7);
+          g.fillStyle= c===col?'#FFE7B0':'rgba(185,140,245,.92)'; g.fill();
+        }
+      }
+    }
+    g.fillStyle='rgba(140,140,180,.5)'; g.font='600 11px Futura,Helvetica,sans-serif';
+    g.textAlign='left'; g.fillText('TIEMPO →', mx, H-8);
+  }
+  function histo(){
+    const c=[0,0,0,0,0];
+    rej.forEach(f=>f.forEach(k=>c[Math.min(4,k)]++));
+    const box=$('#poiHisto'); box.innerHTML='';
+    const mx=Math.max(...c,1);
+    c.forEach((v,i)=>{
+      const d=document.createElement('div'); d.className='bcol';
+      d.innerHTML='<div class="bar"><div class="fill" style="height:'+(v/mx*100)+'%;background:linear-gradient(180deg,#B98CF5,#5A3B95)"></div></div>'+
+        '<div class="bn">'+(i===4?'4+':i)+'</div>';
+      box.appendChild(d);
+    });
+  }
+  function para(){ clearInterval(lazo); lazo=null; col=-1; pinta();
+    $('#poiPlay').textContent='▶ Escuchar la cuadrícula'; $('#poiPlay').classList.remove('on'); }
+  PARADAS.push(para);
+  $('#poiPlay').addEventListener('click',()=>{
+    if(lazo){ para(); return; }
+    ac(); col=-1;
+    $('#poiPlay').textContent='■ Parar'; $('#poiPlay').classList.add('on');
+    lazo=setInterval(()=>{
+      col++;
+      if(col>=COLS){ para(); return; }
+      for(let f=0;f<FIL;f++){
+        const k=rej[f][col];
+        for(let i=0;i<k;i++)
+          nota(azarI(42,86)- (f===6?14:0), i*.06, azar(.25,.9),
+            {timbre:FAM[f][0],gain:.55,pan:(f/(FIL-1))*1.5-.75});
+      }
+      pinta();
+    },230);
+    temporizadores.push(lazo);
+  });
+  $('#poiTira').addEventListener('click',()=>{ reparte();
+    toast('Otra obra distinta… pero fíjate en el histograma: <b>la silueta es la misma</b>.'); });
+  $('#sPoi').addEventListener('input',e=>{
+    lam=+e.target.value/10;
+    $('#vPoi').textContent=lam.toFixed(1).replace('.',',')+' por casilla'+(Math.abs(lam-.6)<.01?' · el de Xenakis':'');
+    reparte();
+  });
+  reparte();
+})();
+
+/* ─────────── avisos al cambiar de pestaña ─────────── */
+function alCambiarVista(v){
+  const M={
+    gra:'Empieza por el <em>test de la nota que falta</em> y remata con el mando de la gravedad.',
+    ale:'Las dos máquinas responden a la misma pregunta: <b>¿suena igual dos veces?</b>',
+    lib:'Sin dados y sin serie: aquí solo hay criterio. Pinta y comprueba si se te ha colado un centro tonal.',
+    ser:'Escribe tu serie en el teclado. Prueba a repetir una nota: la máquina no te dejará.',
+    est:'Cuatro máquinas de probabilidad. La piedra es literalmente el ejemplo de los apuntes.',
+    mapa:'Tres preguntas y sale la casilla. Es el resumen de las cinco pestañas anteriores.'
+  };
+  if(M[v]) toast(M[v],5200);
+}
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   SALA DE PROYECCIÓN
+   ──────────────────────────────────────────────────────────────
+   Cada botón busca su archivo en la carpeta  videos/  que hay al
+   lado de este index.html. Si está, lo reproduce ahí mismo: sin
+   YouTube, sin anuncios y sin salir del portal.
+
+   Los archivos son recortes de un minuto sacados de los originales
+   SIN recomprimir, así que conservan la calidad del vídeo del que
+   salieron. Para cambiar uno, sustitúyelo por otro con el mismo
+   nombre (mp4 o webm).
+   ══════════════════════════════════════════════════════════════ */
+const VIDEOS={
+  pierrot:{
+    tit:'Pierrot lunaire', sub:'Arnold Schoenberg · 1912 · nº 1, Mondestrunken',
+    nota:'Así suena la gravedad apagada. Schoenberg <em>antes</em> de inventar el método: atonalidad libre y <b>Sprechgesang</b>, esa voz que ni habla ni canta del todo.',
+    archivo:'pierrot', busca:'Schoenberg Pierrot lunaire complete performance'
+  },
+  catcerto:{
+    tit:'Catcerto', sub:'Mindaugas Piečaitis · Nora the Piano Cat · 2009',
+    nota:'Azar en la <em>creación</em>: la gata improvisó una vez, el compositor lo fijó en una partitura de orquesta. Cada interpretación suena igual.',
+    archivo:'catcerto', busca:'CATcerto Mindaugas Piecaitis Nora the Piano Cat'
+  },
+  cage:{
+    tit:'Imaginary Landscape N.4', sub:'John Cage · 12 radios y 24 intérpretes · 1951',
+    nota:'Azar en la <em>interpretación</em>: la partitura está totalmente escrita, pero suena distinta cada vez según lo que haya en el aire.',
+    archivo:'imaginary-landscape-4', busca:'John Cage Imaginary Landscape No 4 12 radios'
+  },
+  helicopteros:{
+    tit:'Helicopter String Quartet', sub:'Karlheinz Stockhausen · 1993',
+    nota:'Decisiones particulares en obras particulares, llevado al extremo: un cuarteto de cuerda, cuatro helicópteros y cuatro intérpretes que no se ven entre ellos. Ni azar ni serie: <u>criterio</u>.',
+    archivo:'helicopteros', busca:'Stockhausen Helicopter String Quartet'
+  },
+  berio:{
+    tit:'Sequenza III', sub:'Luciano Berio · para voz femenina · 1966 · Laura Catrani',
+    nota:'Fíjate en la partitura que va apareciendo: no hay melodía ni serie, hay <b>indicaciones de estado de ánimo</b> —urgent, tense muttering, whimpering, tender— que la cantante recorre.',
+    archivo:'sequenza-iii', busca:'Berio Sequenza III Laura Catrani'
+  },
+  serialint:{
+    tit:'Serialismo integral', sub:'Cómo suena cuando se seria absolutamente todo',
+    nota:'Cada nota tiene su altura, su duración, su intensidad y su timbre decididos por cuatro series distintas. Escúchalo después de haber jugado con los cuatro interruptores.',
+    archivo:'serialismo-integral', busca:'serialismo integral música ejemplo'
+  },
+  serialej:{
+    tit:'Serialismo integral · el ejercicio', sub:'Con la partitura a la vista',
+    nota:'Aquí se ve la partitura mientras suena. Es el mismo principio, pero puedes seguir con el ojo lo que decide cada serie.',
+    archivo:'serialismo-ejercicio', busca:'serialismo integral ejercicio'
+  },
+  pithoprakta:{
+    tit:'Pithoprakta', sub:'Iannis Xenakis · 46 cuerdas · 1956',
+    nota:'Cada instrumento es una molécula de gas. La ley de Maxwell-Boltzmann decide su velocidad; Xenakis solo compone la nube.',
+    archivo:'pithoprakta', busca:'Xenakis Pithoprakta score'
+  },
+  metastasis:{
+    tit:'Metastasis · vista espectral', sub:'Iannis Xenakis · 61 músicos · 1954',
+    nota:'No es la partitura: es el <b>espectro del sonido</b> desplazándose. Cada raya diagonal es un glissando. Ahí ves, literalmente, las masas de cuerdas de las que hablábamos.',
+    archivo:'metastasis', busca:'Xenakis Metastaseis score video'
+  }
+};
+
+(function(){
+  const cine=$('#cine'), marco=$('#cineMarco');
+  const EXTS=['mp4','webm','m4v','mov'];
+  const enRed=()=>location.protocol==='http:'||location.protocol==='https:';
+  const MAXW=940;
+
+  function limpia(){ marco.innerHTML=''; marco.style.width=''; }
+
+  /* con material antiguo (320×240, 640×360…) ampliar mucho estropea la imagen:
+     el marco se ajusta a la resolución real del archivo */
+  function ajustaAlVideo(el){
+    const nat=el&&el.videoWidth?el.videoWidth:0;
+    const w = nat ? Math.min(MAXW, Math.max(460, Math.round(nat*1.6))) : MAXW;
+    marco.style.width='min(100%,'+w+'px)';
+  }
+  function reproduce(url){
+    limpia();
+    const vd=document.createElement('video');
+    vd.controls=true; vd.preload='metadata'; vd.playsInline=true; vd.src=url;
+    vd.addEventListener('loadedmetadata',()=>ajustaAlVideo(vd));
+    marco.appendChild(vd);
+  }
+  function pruebaConVideo(v, alFallar){
+    limpia();
+    let i=0, hecho=false, reloj=null;
+    const espera=enRed()?6000:1200;
+    const vd=document.createElement('video');
+    vd.controls=true; vd.preload='metadata'; vd.playsInline=true;
+    marco.appendChild(vd);
+    function siguiente(){
+      clearTimeout(reloj);
+      if(hecho) return;
+      if(i>=EXTS.length){ hecho=true; alFallar&&alFallar(); return; }
+      vd.src='videos/'+v.archivo+'.'+EXTS[i++];
+      try{ vd.load(); }catch(e){}
+      reloj=setTimeout(()=>{ if(!hecho && vd.readyState<1) siguiente(); }, espera);
+    }
+    vd.addEventListener('loadedmetadata',()=>{
+      if(hecho) return; hecho=true; clearTimeout(reloj); ajustaAlVideo(vd);
+    });
+    vd.addEventListener('error',()=>{ if(!hecho) siguiente(); });
+    siguiente();
+  }
+  function busca(v, alFallar){
+    if(!enRed()){ pruebaConVideo(v, alFallar); return; }
+    limpia();
+    (async ()=>{
+      for(let k=0;k<EXTS.length;k++){
+        const u='videos/'+v.archivo+'.'+EXTS[k];
+        let ok=false;
+        try{ const r=await fetch(u,{method:'HEAD'}); ok=r.ok; }catch(e){ ok=false; }
+        if(ok){ reproduce(u); return; }
+      }
+      pruebaConVideo(v, alFallar);
+    })();
+  }
+  function ponVacio(v){
+    limpia();
+    const d=document.createElement('div'); d.id='cineVacio';
+    d.innerHTML='Este vídeo todavía no está en la carpeta <code>videos/</code>.<br><br>'+
+      'Déjalo ahí con el nombre <code>'+v.archivo+'.mp4</code> y el botón lo encontrará solo.<br><br>'+
+      '<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(v.busca)+
+      '" target="_blank" rel="noopener" style="color:var(--viol)">Buscarlo en YouTube ↗</a>';
+    marco.appendChild(d);
+  }
+
+  function abre(k){
+    const v=VIDEOS[k]; if(!v) return;
+    pararTodo();
+    $('#cineTit').textContent=v.tit;
+    $('#cineSub').textContent=v.sub;
+    $('#cineNota').innerHTML=v.nota;
+    cine.classList.add('on');
+    busca(v, ()=>ponVacio(v));
+  }
+  function cierra(){ limpia(); cine.classList.remove('on'); }
+
+  $$('.vid').forEach(b=>b.addEventListener('click',()=>abre(b.dataset.vid)));
+  $('#cineCerrar').addEventListener('click',cierra);
+  cine.addEventListener('click',e=>{ if(e.target===cine) cierra(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && cine.classList.contains('on')) cierra(); });
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   6 · EL MAPA · el decisómetro
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  const FAMILIAS=[
+    {k:'tonal',  t:'Música tonal',
+     d:'Hay un centro. Una nota manda y las demás tiran hacia ella: por eso existen la tensión y el reposo.',
+     e:'Casi toda la música que conoces', cls:'tonal'},
+    {k:'dados',  t:'Aleatoriedad · en la creación',
+     d:'El azar decide mientras se compone. Después la obra queda fija y suena igual cada vez.',
+     e:'Catcerto · el juego de dados de Mozart'},
+    {k:'radios', t:'Aleatoriedad · en la interpretación',
+     d:'La partitura está escrita del todo, pero el azar entra al tocarla. Dos interpretaciones nunca coinciden.',
+     e:'Imaginary Landscape N.4, de Cage'},
+    {k:'libre',  t:'Composición libre',
+     d:'Ni azar ni sistema: decisiones particulares en obras particulares. Solo criterio.',
+     e:'Sequenza III de Berio · el cuarteto de helicópteros'},
+    {k:'dodeca', t:'Dodecafonismo',
+     d:'Un método que reparte las doce alturas: ninguna se repite hasta que han sonado todas.',
+     e:'Schoenberg y la Segunda Escuela de Viena'},
+    {k:'integral',t:'Serialismo integral',
+     d:'Se serian todos los parámetros, no solo la altura: también duración, intensidad y timbre.',
+     e:'El ejercicio de la sección 4'},
+    {k:'estoc',  t:'Música estocástica',
+     d:'Azar al componer, pero gobernado por leyes matemáticas de probabilidad. Se compone la nube, no la nota.',
+     e:'Xenakis · Pithoprakta, Metastasis, Achorripsis'}
+  ];
+  const cajas={};
+  const cf=$('#familias');
+  FAMILIAS.forEach(f=>{
+    const d=document.createElement('div');
+    d.className='fam'+(f.cls?' '+f.cls:'');
+    d.innerHTML='<h4>'+f.t+'</h4><div class="fd">'+f.d+'</div><div class="fe">'+f.e+'</div>';
+    cf.appendChild(d); cajas[f.k]=d;
+  });
+
+  const PREG=[
+    {k:'centro', t:'¿Hay un centro tonal?', o:[['si','Sí'],['no','No']]},
+    {k:'azar',   t:'¿Interviene el azar?',  o:[['no','No'],['crea','Sí, al componer'],['int','Sí, al interpretar']]},
+    {k:'reglas', t:'¿Hay un sistema de reglas previo a la obra?', o:[['no','No'],['si','Sí']]},
+    {k:'que',    t:'¿Y qué se seria con ese sistema?', o:[['alt','Solo las alturas'],['todo','Todos los parámetros']], solo:true}
+  ];
+  const est={centro:null,azar:null,reglas:null,que:null};
+  const filas={};
+  const cont=$('#deciBotones');
+  PREG.forEach(p=>{
+    const fila=document.createElement('div');
+    fila.className='deciFila'+(p.solo?' oculta':'');
+    fila.innerHTML='<div class="dq">'+p.t+'</div>';
+    const row=document.createElement('div'); row.className='row';
+    p.o.forEach(o=>{
+      const b=document.createElement('button'); b.className='btn sm ghost'; b.textContent=o[1];
+      b.addEventListener('click',()=>{
+        est[p.k]=o[0];
+        Array.from(row.children).forEach(c=>c.classList.remove('on'));
+        b.classList.add('on'); resuelve();
+      });
+      row.appendChild(b);
+    });
+    fila.appendChild(row); cont.appendChild(fila);
+    filas[p.k]={el:fila,row:row};
+  });
+
+  let familia=null;
+  function resuelve(){
+    const pideQue = (est.centro==='no' && est.azar==='no' && est.reglas==='si');
+    filas.que.el.classList.toggle('oculta', !pideQue);
+    if(!pideQue){ est.que=null; Array.from(filas.que.row.children).forEach(c=>c.classList.remove('on')); }
+
+    const r=$('#deciResul'), t=$('#deciTxt'), e=$('#deciEj');
+    familia=null;
+    if(est.centro==='si') familia='tonal';
+    else if(est.centro==='no'){
+      if(est.azar==='int') familia='radios';
+      else if(est.azar==='crea') familia=(est.reglas==='si')?'estoc':(est.reglas==='no'?'dados':null);
+      else if(est.azar==='no'){
+        if(est.reglas==='no') familia='libre';
+        else if(est.reglas==='si') familia= est.que==='todo'?'integral':(est.que==='alt'?'dodeca':null);
+      }
+    }
+    Object.keys(cajas).forEach(k=>cajas[k].classList.toggle('on', k===familia));
+    if(!familia){
+      r.textContent='—'; r.style.color='';
+      t.textContent='Responde a la izquierda pensando en cualquier obra. Funciona igual de bien al revés: elige una casilla de abajo y comprueba qué respuestas la producen.'; e.textContent='';
+      return;
+    }
+    const f=FAMILIAS.find(x=>x.k===familia);
+    r.textContent=f.t.toUpperCase();
+    r.style.color = familia==='tonal' ? 'var(--amber)' : 'var(--viol)';
+    r.style.borderColor = familia==='tonal' ? 'rgba(245,194,100,.5)' : 'rgba(185,140,245,.5)';
+    t.textContent=f.d;
+    e.innerHTML='<em>'+f.e+'</em>';
+  }
+  $('#deciOir').addEventListener('click',()=>{
+    if(!familia){ toast('Responde primero a las preguntas.'); return; }
+    pararTodo(); ac();
+    const doce=[0,1,2,3,4,5,6,7,8,9,10,11];
+    let t=.05;
+    if(familia==='tonal'){
+      [0,4,7,4,5,2,0,-1,0].forEach(gr=>{ nota(60+gr,t,.5,{timbre:'piano'}); t+=.44; });
+    } else if(familia==='dodeca'){
+      const s=doce.slice().sort(()=>Math.random()-.5);
+      s.forEach(pc=>{ nota(60+pc,t,.42,{timbre:'piano'}); t+=.36; });
+    } else if(familia==='integral'){
+      const s=doce.slice().sort(()=>Math.random()-.5);
+      const dur=[.18,.5,.26,1,.36,.72,.22,.5,.9,.3,.6,.4];
+      const tim=['cuerda','pizz','viento','campana'];
+      s.forEach((pc,i)=>{ const d=dur[i];
+        nota(60+pc+(i%3?0:12), t, Math.max(.16,d*1.2), {timbre:tim[i%4], gain:.4+((i*37)%10)/14});
+        t+=d+.05; });
+    } else if(familia==='dados'||familia==='libre'){
+      for(let i=0;i<10;i++){ nota(55+azarI(0,24),t,.5,{timbre:familia==='libre'?'campana':'piano'}); t+=.38; }
+    } else if(familia==='radios'){
+      for(let i=0;i<7;i++) ruido(i*.5,.4,{frec:azar(400,2400),q:azar(1,7),gain:.22,pan:azar(-.8,.8)});
+      for(let i=0;i<5;i++) nota(azarI(55,79),azar(0,3.2),.5,{timbre:'organo',gain:.5,pan:azar(-.8,.8)});
+    } else {
+      for(let i=0;i<26;i++){
+        const m=azarI(48,84);
+        gliss(m,m+azarI(-9,9),azar(0,3.2),azar(.7,1.8),{gain:.3,pan:azar(-.9,.9)});
+      }
+    }
+  });
+  resuelve();
+})();
+</script>
+
+</body>
+</html>
