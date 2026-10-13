@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La puerta DODECAFONISMO · el candado</title>
+<!-- 11-oct por la tarde (Iago, Froiz_9): sin el fondo gris que asomaba al aparecer (el fondo ya es transparente desde el primer
+     instante), más gastado y con pintura azul, y quieto: no sigue al ratón; solo se mueven las ruedas. -->
+<script>if (location.search.indexOf('incrustado') >= 0) document.documentElement.className += ' incr';</script>
+<style>
+  @font-face { font-family: "Lora"; src: url("Lora-Variable.ttf"); font-weight: 400 700; }
+  @font-face { font-family: "Poppins"; src: url("Poppins-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Poppins"; src: url("Poppins-Medium.ttf"); font-weight: 500 600; }
+  :root { --fondo: #07090c; --texto: #e7e9ee; --suave: #9aa3ae; --azul: #59d8ff; --borde: rgba(255,255,255,.14); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: radial-gradient(ellipse at 50% 35%, #1a2230 0%, #0b0f15 55%, #050608 100%); color: var(--texto);
+         font-family: "Poppins", system-ui, sans-serif; overflow: hidden; }
+  #escena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .panel { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+           width: min(760px, calc(100% - 32px)); background: rgba(10,13,18,.82); border: 1px solid var(--borde);
+           border-radius: 10px; padding: 16px 18px 18px; backdrop-filter: blur(6px); }
+  .cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .etq { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--azul); }
+  .prog { font-size: 13px; color: var(--suave); letter-spacing: .08em; }
+  .preg { font-family: "Lora", Georgia, serif; font-size: clamp(18px, 2.3vw, 22px); line-height: 1.35; margin: 0 0 12px; }
+  .ops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ops button { font: inherit; font-size: 15px; text-align: left; color: var(--texto); background: rgba(255,255,255,.04);
+                border: 1px solid var(--borde); border-radius: 8px; padding: 10px 12px; cursor: pointer; line-height: 1.3; }
+  .ops button:hover, .ops button:focus-visible { border-color: var(--azul); outline: none; background: rgba(89,216,255,.07); }
+  .ops button:disabled { cursor: default; opacity: .55; }
+  .aviso { min-height: 1.4em; margin: 10px 0 0; font-size: 14px; color: var(--suave); }
+  .entrar { display: none; margin-top: 12px; font: inherit; font-size: 15px; letter-spacing: .14em; text-transform: uppercase;
+            color: #0b0f15; background: var(--azul); border: 0; border-radius: 8px; padding: 12px 22px; cursor: pointer; }
+  @media (max-width: 560px) { .ops { grid-template-columns: 1fr; } }
+
+  /* incrustado en la página del escape room: fondo transparente y letra más grande */
+  :root { color-scheme: dark; }
+  html:has(body.incrustado) { background: transparent; }
+  html.incr, html.incr body { background: transparent !important; }
+  body.incrustado { background: transparent; }
+  body.incrustado .panel { width: 1180px; bottom: 60px; padding: 26px 30px 28px; border-radius: 18px; }
+  body.incrustado .etq { font-size: 20px; } body.incrustado .prog { font-size: 20px; }
+  body.incrustado .preg { font-size: 36px; margin-bottom: 18px; }
+  body.incrustado .ops { gap: 12px; } body.incrustado .ops button { font-size: 26px; padding: 16px 18px; border-radius: 12px; }
+  body.incrustado .aviso { font-size: 24px; } body.incrustado .entrar { font-size: 26px; padding: 18px 34px; }
+</style>
+</head>
+<body>
+<canvas id="escena"></canvas>
+<div class="panel" id="panel">
+  <div class="cab"><span class="etq">La puerta DODECAFONISMO</span><span class="prog" id="prog"></span></div>
+  <p class="preg" id="preg">…</p>
+  <div class="ops" id="ops"></div>
+  <p class="aviso" id="aviso"></p>
+  <button class="entrar" id="entrar">Entrar</button>
+</div>
+
+<script type="importmap">{ "imports": { "three": "./three.module.min.js" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from './RoundedBoxGeometry.js';
+
+/* ───── Las preguntas (guion 3.1) ───── */
+const PREGUNTAS = [
+  { q: 'En la tonalidad, ¿qué sonido es el centro de gravedad?', ops: ['La tónica', 'La dominante', 'La subdominante', 'Ninguno: todos pesan igual'], ok: 0 },
+  { q: '¿Qué es la atonalidad?', ops: ['Música sin un centro tonal jerárquico', 'Música sin melodía, solo ruidos', 'Música sin ritmo ni compás', 'Música escrita tirando dados'], ok: 0 },
+  { q: 'Tiras dados y apuntas lo que sale. ¿Dónde está el azar?', ops: ['Al crear: luego suena siempre igual', 'Al interpretar: suena distinto cada vez', 'En los dos sitios: al escribir y al tocar', 'No hay azar: los dados no cuentan'], ok: 0 },
+  { q: 'Una hoja de fragmentos que el pianista toca en el orden que quiere. ¿Dónde está el azar?', ops: ['Al crear: el compositor sorteó las notas al escribirla', 'Al interpretar: la partitura no cambia, cambia el directo', 'No hay azar: es composición libre', 'En los dos sitios: al escribir y al tocar'], ok: 1 },
+  { q: 'Ni azar ni reglas fijas, como la Sequenza III. ¿Qué es?', ops: ['Música estocástica', 'Dodecafonismo', 'Composición libre', 'Música tonal'], ok: 2 },
+];
+const PALABRA = 'REGLAS';
+const N = 10;                              // letras en cada rueda
+const RELLENO = 'BCDFHJKMNOPTUVXZ';         // letras falsas
+
+/* ───── Escena ───── */
+const lienzo = document.getElementById('escena');
+const render = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true, alpha: true, preserveDrawingBuffer: true });
+render.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+render.outputColorSpace = THREE.SRGBColorSpace;
+render.toneMapping = THREE.ACESFilmicToneMapping;
+render.toneMappingExposure = 1.1;
+const escena = new THREE.Scene();
+const camara = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+camara.position.set(0, 1.4, 15);
+camara.lookAt(0, -0.15, 0);
+
+escena.add(new THREE.HemisphereLight(0x9fb8ff, 0x1a120a, 0.55));
+const foco = new THREE.SpotLight(0xffe2b8, 90, 30, Math.PI / 6, 0.5, 1.4);
+foco.position.set(3.5, 6, 7); foco.target.position.set(0, 0.6, 0); escena.add(foco, foco.target);
+const recorte = new THREE.DirectionalLight(0x7fd0ff, 1.2); recorte.position.set(-6, 2, -3); escena.add(recorte);
+const frente = new THREE.DirectionalLight(0xffffff, 0.6); frente.position.set(0, 1, 8); escena.add(frente);
+
+const candado = new THREE.Group(); escena.add(candado);
+
+// textura de latón muy gastado: manchas de óxido y de mugre, arañazos, el brillo comido en los bordes… y pintura azul
+// (la de la pintada DODECAFONISMO): salpicaduras, un brochazo y algún chorreón (Iago, 11-oct: «más desgastado, algo de pintura azul»)
+function texturaLaton() {
+  const c = document.createElement('canvas'); c.width = c.height = 1024; const g = c.getContext('2d');
+  g.fillStyle = '#7f6026'; g.fillRect(0, 0, 1024, 1024);
+  for (let i = 0; i < 26; i++) {                         // manchas grandes: verdín, óxido y mugre
+    const x = Math.random() * 1024, y = Math.random() * 1024, r = 40 + Math.random() * 160, k = Math.random();
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, k < .35 ? 'rgba(62,92,70,.32)' : k < .7 ? 'rgba(70,38,12,.38)' : 'rgba(20,14,8,.4)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  for (let i = 0; i < 30000; i++) {                      // grano
+    const x = Math.random() * 1024, y = Math.random() * 1024, a = Math.random() * 0.1;
+    g.fillStyle = Math.random() < 0.55 ? `rgba(30,18,4,${a})` : `rgba(255,226,150,${a})`; g.fillRect(x, y, 2, 2);
+  }
+  for (let i = 0; i < 420; i++) {                        // arañazos
+    g.strokeStyle = Math.random() < .7 ? `rgba(255,232,170,${Math.random() * 0.16})` : `rgba(20,12,4,${Math.random() * 0.25})`; g.lineWidth = Math.random() * 1.6;
+    g.beginPath(); const x = Math.random() * 1024, y = Math.random() * 1024; g.moveTo(x, y); g.lineTo(x + Math.random() * 120 - 60, y + Math.random() * 18 - 9); g.stroke();
+  }
+  const azul = a => `rgba(31,75,255,${a})`;
+  g.save(); g.globalAlpha = .9; g.strokeStyle = azul(.85); g.lineCap = 'round';  // un brochazo azul en diagonal
+  for (let k = 0; k < 6; k++) { g.lineWidth = 26 + Math.random() * 22; g.beginPath(); g.moveTo(560 + k * 6, 200 + k * 9); g.bezierCurveTo(700, 320 + k * 4, 820, 470, 980 + k * 4, 540 + k * 8); g.stroke(); }
+  g.restore();
+  for (let i = 0; i < 9; i++) {                          // chorreones que bajan del brochazo
+    const x = 600 + Math.random() * 380, y = 280 + (x - 600) * .55, l = 50 + Math.random() * 190;
+    g.fillStyle = azul(.8); g.fillRect(x, y, 5 + Math.random() * 7, l); g.beginPath(); g.arc(x + 5, y + l, 7, 0, 7); g.fill();
+  }
+  for (let i = 0; i < 260; i++) {                        // salpicaduras
+    const x = 120 + Math.random() * 900, y = 60 + Math.random() * 760, r = Math.random() < .9 ? 1 + Math.random() * 5 : 6 + Math.random() * 12;
+    g.fillStyle = azul(.45 + Math.random() * .5); g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+  }
+  for (let i = 0; i < 1600; i++) {                       // la pintura, también desconchada y rayada
+    const x = 500 + Math.random() * 524, y = 150 + Math.random() * 600;
+    g.fillStyle = `rgba(110,82,36,${Math.random() * .5})`; g.fillRect(x, y, 1 + Math.random() * 3, 1 + Math.random() * 2);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const laton = new THREE.MeshStandardMaterial({ map: texturaLaton(), metalness: 0.72, roughness: 0.5, color: 0xffffff });
+const acero = new THREE.MeshStandardMaterial({ color: 0xa9b0b8, metalness: 0.95, roughness: 0.22 });
+const oscuro = new THREE.MeshStandardMaterial({ color: 0x1b1712, metalness: 0.6, roughness: 0.55 });
+
+// cuerpo
+const cuerpo = new THREE.Mesh(new RoundedBoxGeometry(4.4, 3.0, 1.3, 6, 0.32), laton);
+cuerpo.position.y = 0; candado.add(cuerpo);
+// ranura donde van las ruedas
+const ranura = new THREE.Mesh(new RoundedBoxGeometry(3.7, 1.14, 0.5, 4, 0.08), oscuro);
+ranura.position.set(0, -0.05, 0.47); candado.add(ranura);
+
+// arco (asa)
+const arco = new THREE.Group(); candado.add(arco);
+class CurvaU extends THREE.Curve {
+  getPoint(t, v = new THREE.Vector3()) {
+    // de la pata izquierda (abajo) subiendo, semicírculo arriba, bajando por la derecha
+    const R = 1.15, alto = 1.25;
+    const L = alto * 2 + Math.PI * R; let s = t * L;
+    if (s < alto) return v.set(-R, s, 0);
+    s -= alto;
+    if (s < Math.PI * R) { const a = Math.PI - s / R; return v.set(Math.cos(a) * R, alto + Math.sin(a) * R, 0); }
+    s -= Math.PI * R; return v.set(R, alto - s, 0);
+  }
+}
+const asa = new THREE.Mesh(new THREE.TubeGeometry(new CurvaU(), 120, 0.2, 24, false), acero);
+asa.position.y = 1.0; arco.add(asa);
+
+// ruedas
+function texturaRueda(letras) {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 256); grad.addColorStop(0, '#2a2117'); grad.addColorStop(.5, '#d8c38f'); grad.addColorStop(1, '#2a2117');
+  g.fillStyle = '#c9b27a'; g.fillRect(0, 0, 1024, 256);
+  g.globalAlpha = .35; g.fillStyle = grad; g.fillRect(0, 0, 1024, 256); g.globalAlpha = 1;
+  const paso = 1024 / letras.length;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let i = 0; i < letras.length; i++) {
+    const x = (i + 0.5) * paso;
+    g.strokeStyle = 'rgba(40,28,10,.55)'; g.lineWidth = 3; g.beginPath(); g.moveTo(i * paso, 0); g.lineTo(i * paso, 256); g.stroke();
+    g.save(); g.translate(x, 128); g.rotate(Math.PI / 2);          // de pie, mirando hacia fuera
+    g.font = '700 150px Lora, Georgia, serif';
+    g.fillStyle = 'rgba(255,245,215,.35)'; g.fillText(letras[i], 2, 4);   // brillo del grabado
+    g.fillStyle = '#21180c'; g.fillText(letras[i], 0, 0);
+    g.restore();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function barajar(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+const ruedas = [];
+const ANCHO = 0.5, SEP = 0.58, RADIO = 0.5;
+for (let k = 0; k < PALABRA.length; k++) {
+  const buena = PALABRA[k];
+  const falsas = barajar(RELLENO.split('').filter(l => l !== buena)).slice(0, N - 1);
+  const letras = barajar([buena, ...falsas]);
+  const geo = new THREE.CylinderGeometry(RADIO, RADIO, ANCHO, 60, 1, false);
+  const mats = [new THREE.MeshStandardMaterial({ map: texturaRueda(letras), metalness: 0.55, roughness: 0.42, emissive: 0x000000 }),
+                laton, laton];
+  const m = new THREE.Mesh(geo, mats);
+  m.rotation.z = Math.PI / 2;                     // eje en horizontal
+  const pivote = new THREE.Group(); pivote.add(m);
+  pivote.position.set((k - (PALABRA.length - 1) / 2) * SEP, -0.05, 0.56);
+  candado.add(pivote);
+  // separadores
+  if (k < PALABRA.length) {
+    const sepa = new THREE.Mesh(new THREE.CylinderGeometry(RADIO * 0.9, RADIO * 0.9, 0.06, 40), laton);
+    sepa.rotation.z = Math.PI / 2; sepa.position.set(pivote.position.x + SEP / 2, -0.05, 0.56);
+    if (k < PALABRA.length - 1) candado.add(sepa);
+  }
+  const iBuena = letras.indexOf(buena);
+  let actual = k === 0 ? iBuena : (iBuena + 3 + Math.floor(Math.random() * (N - 5))) % N;
+  ruedas.push({ pivote, malla: m, letras, iBuena, actual, giro: 0, objetivo: 0, mat: mats[0] });
+}
+// chapa delantera con la ventana de lectura (tapa las letras de arriba y de abajo)
+const VENTANA = 0.42, YC = -0.05;
+for (const lado of [1, -1]) {
+  const alto = 0.5;
+  const chapa = new THREE.Mesh(new RoundedBoxGeometry(3.8, alto, 0.12, 3, 0.04), laton);
+  chapa.position.set(0, YC + lado * (VENTANA / 2 + alto / 2), 1.08); candado.add(chapa);
+  const filo = new THREE.Mesh(new RoundedBoxGeometry(3.8, 0.05, 0.16, 2, 0.02), oscuro);
+  filo.position.set(0, YC + lado * (VENTANA / 2 + 0.02), 1.1); candado.add(filo);
+}
+// tornillos
+for (const [x, y] of [[-1.85, 1.1], [1.85, 1.1], [-1.85, -1.1], [1.85, -1.1]]) {
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 20), acero);
+  t.rotation.x = Math.PI / 2; t.position.set(x, y, 0.66); candado.add(t);
+}
+
+// ángulo de cada letra: la letra i queda delante cuando la rueda gira ang(i)
+const angLetra = i => ((i + 0.5) / N) * Math.PI * 2;   // la letra i mira a la cámara cuando la rueda gira este ángulo
+function colocar(r, i) { r.objetivo = angLetra(i); }
+ruedas.forEach(r => { colocar(r, r.actual); r.giro = r.objetivo; r.malla.rotation.x = r.giro; });
+
+/* ───── Sonido ─────
+   Iago, 11-oct noche (Froiz 11): «los sonidos del candado abriéndose y girando… puedes mejorarlos con sonidos que tenga yo en
+   Splice… al menos el de abrir… suena como si fuese un tamborcito». Ahora son clics y cerrojos de verdad (sacados de sus
+   muestras de Splice: herram/sonidos_11oct_c.py), que se cargan de ../aud/sfx/. Si no llegan a cargarse (p. ej., abriendo
+   el fichero suelto), quedan los sonidos sintéticos de antes como reserva. */
+let ac = null; const MUESTRAS = {}, nTic = { n: 0 };
+const FICHEROS = { tic1: 'candado_tic_1', tic2: 'candado_tic_2', tic3: 'candado_tic_3', encaja: 'candado_encaja', error: 'candado_error', abre: 'candado_abre' };
+// los ficheros se piden ya al abrir el candado (son muy pequeños); se descodifican con el primer clic, que es cuando se puede sonar
+const CRUDOS = Object.fromEntries(Object.entries(FICHEROS).map(([k, n]) =>
+  [k, fetch(`../aud/sfx/${n}.mp3`).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); }).catch(() => null)]));
+function audio() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    for (const [k, p] of Object.entries(CRUDOS))
+      p.then(b => { if (b) ac.decodeAudioData(b, d => { MUESTRAS[k] = d; }, () => {}); });
+  }
+  if (ac.state === 'suspended') ac.resume().catch(() => {});
+  return ac;
+}
+function muestra(k, vol = 1, vel = 1) {
+  if (!ac || !MUESTRAS[k]) return false;
+  const s = ac.createBufferSource(); s.buffer = MUESTRAS[k]; s.playbackRate.value = vel;
+  const g = ac.createGain(); g.gain.value = vol; s.connect(g).connect(ac.destination); s.start(); return true;
+}
+function clic(t0 = 0, vol = 0.35) {
+  // tres clics que se turnan, cada uno con una afinación un poco distinta: así una rueda que gira no suena a ametralladora
+  if (!t0 && muestra('tic' + (1 + nTic.n++ % 3), vol * 1.9, 0.93 + Math.random() * 0.14)) return;
+  const a = audio(), t = a.currentTime + t0;
+  const n = a.createBufferSource(); const b = a.createBuffer(1, a.sampleRate * 0.03, a.sampleRate); const d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (a.sampleRate * 0.004));
+  n.buffer = b; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3200; f.Q.value = 2;
+  const g = a.createGain(); g.gain.value = vol; n.connect(f).connect(g).connect(a.destination); n.start(t);
+}
+function golpe(frec = 110, dur = 0.5, vol = 0.5) {
+  const a = audio(), t = a.currentTime;
+  [1, 2.76, 5.4].forEach((m, i) => {
+    const o = a.createOscillator(); o.frequency.value = frec * m; const g = a.createGain();
+    g.gain.setValueAtTime(vol / (i + 1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur / (i + 1));
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur);
+  });
+}
+
+/* ───── Animación ───── */
+const reloj = new THREE.Clock();
+let abierto = 0, abriendo = false;
+// quieto (Iago, 11-oct: «no es necesario que el candado reaccione a mi ratón… prefiero que esté estático»): un ángulo fijo
+candado.rotation.set(-0.06, -0.14, 0); candado.position.y = 0.05;
+function tamano() {
+  const w = innerWidth, h = innerHeight; render.setSize(w, h, false); camara.aspect = w / h;
+  camara.position.z = w / h < 0.8 ? 22 : 15; camara.updateProjectionMatrix();
+}
+addEventListener('resize', tamano); tamano();
+function bucle() {
+  const dt = Math.min(0.05, reloj.getDelta());
+  for (const r of ruedas) {
+    const antes = r.giro;
+    r.giro += (r.objetivo - r.giro) * Math.min(1, dt * 7);
+    if (Math.abs(r.objetivo - r.giro) < 0.0005) r.giro = r.objetivo;
+    // un clic cada vez que pasa una letra
+    const paso = Math.PI * 2 / N;
+    if (Math.floor(antes / paso) !== Math.floor(r.giro / paso) && ac) clic(0, 0.18);
+    r.malla.rotation.x = r.giro;
+  }
+  if (abriendo && abierto < 1) abierto = Math.min(1, abierto + dt * 1.6);
+  const e = 1 - Math.pow(1 - abierto, 3);
+  arco.position.y = e * 0.9; arco.rotation.y = e * 0.5;
+  render.render(escena, camara); requestAnimationFrame(bucle);
+}
+bucle();
+
+/* ───── Las preguntas ───── */
+const cola = [0, 1, 2, 3, 4]; let hechas = 0;
+const $ = id => document.getElementById(id);
+function pinta() {
+  $('prog').textContent = `${hechas} de 5`;
+  if (!cola.length) return;
+  const p = PREGUNTAS[cola[0]];
+  $('preg').textContent = p.q; $('ops').innerHTML = '';
+  // las opciones salen cada vez en un orden distinto: la buena no puede estar siempre en el mismo sitio
+  const orden = p.ops.map((_, i) => i);
+  for (let i = orden.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [orden[i], orden[j]] = [orden[j], orden[i]]; }
+  orden.forEach(i => { const b = document.createElement('button'); b.textContent = p.ops[i]; b.onclick = () => responde(i); $('ops').appendChild(b); });
+}
+function responde(i) {
+  audio();
+  const nq = cola[0], p = PREGUNTAS[nq], r = ruedas[nq + 1];
+  [...$('ops').children].forEach(b => b.disabled = true);
+  if (i === p.ok) {
+    // la rueda va a su letra por el camino más corto, hacia delante
+    let pasos = (r.iBuena - r.actual + N) % N; if (pasos === 0) pasos = N;
+    r.actual = r.iBuena; r.objetivo += pasos * (Math.PI * 2 / N);
+    r.mat.emissive.setHex(0x2a1d05);
+    cola.shift(); hechas++;
+    $('aviso').textContent = `«${PALABRA[nq + 1]}». La rueda encaja.`;
+    setTimeout(() => { muestra('encaja', 0.8) || golpe(220, 0.25, 0.25); }, 700);
+    if (!cola.length) return setTimeout(fin, 1300);
+    setTimeout(() => { $('aviso').textContent = ''; pinta(); }, 1400);
+  } else {
+    // la rueda gira sola y se queda en otra letra; la pregunta vuelve al final
+    let nueva; do { nueva = Math.floor(Math.random() * N); } while (nueva === r.iBuena);
+    const pasos = (nueva - r.actual + N) % N + N;
+    r.actual = nueva; r.objetivo += pasos * (Math.PI * 2 / N);
+    muestra('error', 0.5) || golpe(70, 0.6, 0.5);
+    $('aviso').textContent = 'La rueda no encaja. Esa pregunta volverá.';
+    cola.push(cola.shift());
+    setTimeout(() => { $('aviso').textContent = ''; pinta(); }, 1700);
+  }
+}
+function fin() {
+  $('prog').textContent = '5 de 5';
+  $('preg').textContent = 'REGLAS.';
+  $('ops').innerHTML = '';
+  $('aviso').textContent = 'Clac. El candado se abre.';
+  (muestra('abre', 1) || golpe(55, 1.2, 0.7)); abriendo = true;
+  setTimeout(() => { $('entrar').style.display = 'inline-block'; }, 900);
+}
+$('entrar').onclick = () => { document.body.style.transition = 'opacity 1.2s'; document.body.style.opacity = 0; try { parent.postMessage({ candado: 'abierto' }, '*'); } catch (e) {} };
+if (new URLSearchParams(location.search).get('incrustado')) document.body.classList.add('incrustado');
+document.fonts.load('700 150px Lora').then(() => {
+  ruedas.forEach(r => { r.mat.map = texturaRueda(r.letras); r.mat.needsUpdate = true; });
+}).catch(() => {});
+pinta();
+// para las pruebas automáticas
+window.__candado = { responde, ruedas, PREGUNTAS, cola, MUESTRAS };
+</script>
+</body>
+</html>
