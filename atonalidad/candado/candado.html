@@ -30,6 +30,9 @@
                 border: 1px solid var(--borde); border-radius: 8px; padding: 10px 12px; cursor: pointer; line-height: 1.3; }
   .ops button:hover, .ops button:focus-visible { border-color: var(--azul); outline: none; background: rgba(89,216,255,.07); }
   .ops button:disabled { cursor: default; opacity: .55; }
+  /* al cambiar de pregunta, el botón que queda debajo del ratón (o del dedo) no se ilumina hasta que el ratón se mueve: parecía que
+     la respuesta de antes ya estaba elegida (Iago, 13-oct noche: «que no resalte la posición de la última respuesta al cambiar de pregunta») */
+  .ops.quieto button:hover { border-color: var(--borde); background: rgba(255,255,255,.04); }
   .aviso { min-height: 1.4em; margin: 10px 0 0; font-size: 14px; color: var(--suave); }
   .entrar { display: none; margin-top: 12px; font: inherit; font-size: 15px; letter-spacing: .14em; text-transform: uppercase;
             color: #0b0f15; background: var(--azul); border: 0; border-radius: 8px; padding: 12px 22px; cursor: pointer; }
@@ -305,7 +308,19 @@ function pinta() {
   const orden = p.ops.map((_, i) => i);
   for (let i = orden.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [orden[i], orden[j]] = [orden[j], orden[i]]; }
   orden.forEach(i => { const b = document.createElement('button'); b.textContent = p.ops[i]; b.onclick = () => responde(i); $('ops').appendChild(b); });
+  quieto();
 }
+// el resalte vuelve en cuanto el ratón se mueve de verdad (más de 6 px) por encima de las respuestas
+let quieto0 = null;
+function quieto() {
+  const o = $('ops'); o.classList.add('quieto'); quieto0 = null;
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
+$('ops').addEventListener('pointermove', e => {
+  const o = $('ops'); if (!o.classList.contains('quieto') || e.pointerType === 'touch') return;
+  if (!quieto0) { quieto0 = [e.clientX, e.clientY]; return; }
+  if (Math.hypot(e.clientX - quieto0[0], e.clientY - quieto0[1]) > 6) o.classList.remove('quieto');
+});
 function responde(i) {
   audio();
   const nq = cola[0], p = PREGUNTAS[nq], r = ruedas[nq + 1];
