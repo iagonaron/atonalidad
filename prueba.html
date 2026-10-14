@@ -1872,6 +1872,59 @@ const ESCR=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[4,-1],[4,0],[5,-1],[5,0],[6,-
 const mod12=n=>((n%12)+12)%12;
 const frecDe=m=>440*Math.pow(2,(m-69)/12);
 
+/* ── bemoles y sostenidos (Iago, 14-oct por la tarde, probándolo con Antonio): «siempre utilizas el bemol… estaría bien que haya
+   variedad entre bemoles y sostenidos… en cada serie asegúrate de que haya al menos un bemol y al menos un sostenido, cumpliendo las
+   normas, excepto la del libro». Cada nota puede llevar su escritura: alt = −1 (con bemol, como hasta ahora), +1 (con sostenido) o 0
+   (natural). La norma, la de la escala cromática: si a una tecla negra se llega SUBIENDO, sostenido; si se llega BAJANDO, bemol (la
+   primera de la serie, según hacia dónde sale). Y si así salen todas de la misma clase, se cambia una: la que sale hacia el otro lado
+   y no queda pegada a una vecina de su misma letra (Fa♯ junto a un Fa, por ejemplo). ── */
+const NOM_S=['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const tecNegra=m=>[1,3,6,8,10].includes(mod12(m));
+function escr(m,alt){ const pc=mod12(m); return (alt===1&&tecNegra(pc))?[ESCR[pc-1][0],1]:ESCR[pc]; }
+function nombreDe(m,alt){ const pc=mod12(m); return (alt===1&&tecNegra(pc))?NOM_S[pc]:NOM[pc]; }
+function pasoEsc(m,alt){ return (Math.floor(m/12)-1)*7+escr(m,alt)[0]; }
+function deletrea(midis,o){
+  o=o||{}; const n=midis.length, alt=midis.map(()=>0), negras=[];
+  for(let i=0;i<n;i++){
+    if(!tecNegra(midis[i])) continue;
+    const llega=i>0?Math.sign(midis[i]-midis[i-1]):0, sale=i<n-1?Math.sign(midis[i+1]-midis[i]):0;
+    alt[i]=(llega||sale||-1)>0?1:-1; negras.push(i);
+  }
+  if(o.fija) Object.keys(o.fija).forEach(i=>{ if(tecNegra(midis[i])) alt[i]=o.fija[i]; });
+  if(o.mezcla!==false && negras.length>=2){
+    const sos=negras.filter(i=>alt[i]===1).length;
+    if(!sos||sos===negras.length){
+      const quiere=sos?-1:1; let mejor=null, pm=-1e9;
+      negras.forEach(i=>{
+        if(o.fija&&o.fija[i]!=null) return;
+        const sale=i<n-1?Math.sign(midis[i+1]-midis[i]):0, L=escr(midis[i],quiere)[0];
+        let p=(sale===quiere?4:0)+i/100;
+        [i-1,i+1].forEach(j=>{ if(j>=0&&j<n&&escr(midis[j],alt[j])[0]===L) p-=6; });
+        if(p>pm){ pm=p; mejor=i; }
+      });
+      if(mejor!=null) alt[mejor]=quiere;
+    }
+  }
+  return alt;
+}
+const lasDos=alts=>alts.includes(1)&&alts.includes(-1);
+function sostenido(ctx,x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.lineCap='butt';
+  ctx.lineWidth=s*.095;
+  ctx.beginPath(); ctx.moveTo(-.2*s,-1.0*s); ctx.lineTo(-.2*s,1.25*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(.22*s,-1.25*s); ctx.lineTo(.22*s,1.0*s); ctx.stroke();
+  ctx.lineWidth=s*.21;
+  ctx.beginPath(); ctx.moveTo(-.48*s,-.24*s); ctx.lineTo(.5*s,-.52*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-.48*s,.52*s); ctx.lineTo(.5*s,.24*s); ctx.stroke();
+  ctx.restore();
+}
+/* la alteración que hay que dibujar delante de una nota (con lo que ya va alterado en el compás): ♭, ♯, ♮ o nada */
+function alteracion(ctx,e,cx,cy,s,alteradas){
+  if(e[1]===-1){ bemol(ctx,cx-s*1.32,cy,s); alteradas[e[0]]=-1; }
+  else if(e[1]===1){ sostenido(ctx,cx-s*1.45,cy,s); alteradas[e[0]]=1; }
+  else if(alteradas[e[0]]){ becuadro(ctx,cx-s*1.30,cy,s); alteradas[e[0]]=0; }
+}
+
 /* ══════════ NOTACIÓN ══════════ */
 const PAPEL='#F7F7F4';
 const PENT_S=20;          /* tamaño único de pentagrama en todo el portal */
@@ -1975,7 +2028,7 @@ function pentagrama(ctx,o){
   claveSol(ctx,x+s*1.75,y+3*s,s);
   const n=o.midis.length; if(!n){ ctx.restore(); return; }
   let pasoMin=99, pasoMax=-99;
-  o.midis.forEach(m=>{ const q=pasoDe(m); if(q<pasoMin)pasoMin=q; if(q>pasoMax)pasoMax=q; });
+  o.midis.forEach((m,i)=>{ const q=pasoEsc(m,o.alts?o.alts[i]:0); if(q<pasoMin)pasoMin=q; if(q>pasoMax)pasoMax=q; });
   const yNom=Math.max(y+6.5*s, yDe(pasoMin)+2.15*s);
   const yTit=o.nombres? yNom+1.6*s : Math.max(y+6.3*s, yDe(pasoMin)+2.1*s);
   const ranuras=Math.max(n, o.huecos||0);
@@ -1984,7 +2037,7 @@ function pentagrama(ctx,o){
   const alteradas={};
   o.midis.forEach((m,i)=>{
     const cx=(ranuras===1)?x0:x0+i*dx;
-    const pc=mod12(m), e=ESCR[pc], paso=pasoDe(m), cy=yDe(paso);
+    const alt=o.alts?o.alts[i]:0, pc=mod12(m), e=escr(m,alt), paso=pasoEsc(m,alt), cy=yDe(paso);
     const res=(o.resalta===i);
     ctx.save();
     if(res){ ctx.fillStyle=o.color||'#7A3FC6'; ctx.strokeStyle=o.color||'#7A3FC6'; }
@@ -1993,14 +2046,13 @@ function pentagrama(ctx,o){
     if(paso<=28) for(let ls=28; ls>=paso; ls-=2){ const ly=yDe(ls); ctx.beginPath(); ctx.moveTo(cx-s*.95,ly); ctx.lineTo(cx+s*.95,ly); ctx.stroke(); }
     if(paso>=40) for(let ls=40; ls<=paso; ls+=2){ const ly=yDe(ls); ctx.beginPath(); ctx.moveTo(cx-s*.95,ly); ctx.lineTo(cx+s*.95,ly); ctx.stroke(); }
     /* alteración */
-    if(e[1]===-1){ bemol(ctx,cx-s*1.32,cy,s); alteradas[e[0]]=1; }
-    else if(alteradas[e[0]]){ becuadro(ctx,cx-s*1.30,cy,s); alteradas[e[0]]=0; }
+    alteracion(ctx,e,cx,cy,s,alteradas);
     figuraNota(ctx,cx,cy,s, o.figuras?o.figuras[i]:4, paso<34, paso%2===0);
     ctx.restore();
     if(o.nombres){
       ctx.save(); ctx.fillStyle=res?(o.color||'#7A3FC6'):'rgba(30,26,44,.62)';
       ctx.font=`${(s*.80)|0}px "Avenir Next",Helvetica,Arial,sans-serif`;
-      ctx.textAlign='center'; ctx.fillText(NOM[pc],cx,yNom); ctx.restore();
+      ctx.textAlign='center'; ctx.fillText(nombreDe(m,alt),cx,yNom); ctx.restore();
     }
   });
   if(o.titulo){
@@ -2016,7 +2068,8 @@ function pentagrama(ctx,o){
   }
   ctx.restore();
 }
-return { NOM, ESCR, mod12, pentagrama, figuraNota, claveSol, bemol, becuadro, redonda, negra, cabezaLlena, pasoDe, PAPEL, PENT_S };
+return { NOM, NOM_S, ESCR, mod12, pentagrama, figuraNota, claveSol, bemol, becuadro, sostenido, alteracion, redonda, negra, cabezaLlena, pasoDe,
+  escr, nombreDe, pasoEsc, deletrea, lasDos, esNegra: tecNegra, PAPEL, PENT_S };
 })();
 
 /* «Atonalidad» · la serie animada del capítulo 3 (Claude para Iago, 11-oct-2026, con el audio Froiz_9).
@@ -2065,10 +2118,26 @@ function pauta(padre, x, y, w, h, o = {}) {
   const yBase = Y + 4 * s, yDe = paso => yBase - (paso - 30) * (s / 2);
   const P = {
     cv, g, s, notas: [], titulo: o.titulo || '', color: o.color || '#2e7d78', gris: !!o.gris, resalta: -1, arcos: [], espejo: null, extra: null,
-    xDe: slot => x0 + slot * dx, yDeMidi: m => yDe(N.pasoDe(m)), yDe,
-    pon(midis, titulo) { this.notas = midis.map((m, i) => ({ m, de: m, u: 1, slot: i, oy: 0, a: 1 })); if (titulo != null) this.titulo = titulo; this.pinta(); },
-    midis() { return this.notas.slice().sort((a, b) => a.slot - b.slot).map(n => n.m); },
-    nombre(slot) { const n = this.notas.find(x => x.slot === slot); return n ? NOM[mod12(n.m)] : ''; },       // el nombre de la nota que está en ese sitio
+    xDe: slot => x0 + slot * dx, yDeMidi: (m, alt) => yDe(N.pasoEsc(m, alt || 0)), yDe,
+    // o.alts: cómo se escribe cada nota (−1 bemol, +1 sostenido); sin ella, por la norma (N.deletrea). La base (la serie tal como se puso)
+    // se guarda: si un transporte vuelve a ella, vuelve también su escritura (p. ej., la del libro, con sus bemoles)
+    pon(midis, titulo, o = {}) {
+      const al = o.alts || N.deletrea(midis);
+      this.notas = midis.map((m, i) => ({ m, de: m, u: 1, slot: i, oy: 0, a: 1, alt: al[i], altDe: al[i] }));
+      this.base = { midis: midis.slice(), alts: al.slice() };
+      if (titulo != null) this.titulo = titulo; this.pinta();
+    },
+    orden() { return this.notas.slice().sort((a, b) => a.slot - b.slot); },
+    midis() { return this.orden().map(n => n.m); },
+    alts() { return this.orden().map(n => n.alt); },
+    nombre(slot) { const n = this.notas.find(x => Math.round(x.slot) === slot); return n ? N.nombreDe(n.m, n.alt) : ''; },       // el nombre de la nota de ese sitio, tal como está escrita
+    // vuelve a escribir la serie (tras moverla): la de la base si es la misma; si no, por la norma
+    deletreaYa() {
+      const o = this.orden(), ms = o.map(n => n.m), b = this.base;
+      const al = b && b.midis.length === ms.length && b.midis.every((m, i) => m === ms[i]) ? b.alts : N.deletrea(ms);
+      o.forEach((n, i) => { n.altDe = n.u < 1 ? n.altDe : n.alt; n.alt = al[i]; });
+    },
+    fijaBase() { this.base = { midis: this.midis(), alts: this.alts() }; },
     pinta() {
       g.clearRect(0, 0, w, h);
       g.fillStyle = this.gris ? '#e9e7e0' : N.PAPEL; g.fillRect(0, 0, w, h);
@@ -2079,15 +2148,15 @@ function pauta(padre, x, y, w, h, o = {}) {
       if (this.titulo) { g.font = `600 ${(s * .95) | 0}px Poppins, "Avenir Next", Helvetica, Arial, sans-serif`; g.textAlign = 'left'; g.fillText(this.titulo, X, s * 1.35); }
       g.restore();
       if (this.espejo != null) {           // la línea del espejo (3.7)
-        const yy = this.yDeMidi(this.espejo); g.save(); g.setLineDash([s * .5, s * .35]); g.strokeStyle = 'rgba(176,71,46,.55)'; g.lineWidth = 2;
+        const yy = this.yDeMidi(this.espejo, this.espejoAlt); g.save(); g.setLineDash([s * .5, s * .35]); g.strokeStyle = 'rgba(176,71,46,.55)'; g.lineWidth = 2;
         g.beginPath(); g.moveTo(X + s * 3, yy); g.lineTo(X + W - s * 1.5, yy); g.stroke(); g.restore();
       }
       // las notas, de izquierda a derecha (para las alteraciones: el bemol vale todo el compás → becuadro si hace falta)
       const orden = this.notas.slice().sort((a, b) => a.slot - b.slot), alteradas = {};
       orden.forEach((n, k) => {
         const cx = x0 + n.slot * dx;
-        const yA = this.yDeMidi(n.de), yB = this.yDeMidi(n.m), cy = yA + (yB - yA) * ease(Math.min(1, n.u)) + (n.oy || 0);
-        const mVis = n.u < .5 ? n.de : n.m, pc = mod12(mVis), e = N.ESCR[pc], paso = N.pasoDe(mVis);
+        const yA = this.yDeMidi(n.de, n.altDe), yB = this.yDeMidi(n.m, n.alt), cy = yA + (yB - yA) * ease(Math.min(1, n.u)) + (n.oy || 0);
+        const mVis = n.u < .5 ? n.de : n.m, aVis = n.u < .5 ? n.altDe : n.alt, e = N.escr(mVis, aVis);
         const col = n.col || (k === this.resalta || n.slot === this.resalta ? this.color : null);
         g.save(); g.globalAlpha = n.a == null ? 1 : n.a;
         g.fillStyle = col || tinta; g.strokeStyle = col || tinta;
@@ -2095,19 +2164,18 @@ function pauta(padre, x, y, w, h, o = {}) {
         const pasoY = 30 - (cy - yBase) / (s / 2);          // el paso «visible» (para las líneas adicionales)
         if (pasoY <= 28.5) for (let ls = 28; ls >= pasoY - .5; ls -= 2) { const ly = yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
         if (pasoY >= 39.5) for (let ls = 40; ls <= pasoY + .5; ls += 2) { const ly = yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
-        if (e[1] === -1) { N.bemol(g, cx - s * 1.32, cy, s); alteradas[e[0]] = 1; }
-        else if (alteradas[e[0]]) { N.becuadro(g, cx - s * 1.3, cy, s); alteradas[e[0]] = 0; }
+        N.alteracion(g, e, cx, cy, s, alteradas);
         N.redonda(g, cx, cy, s);
         g.restore();
         if (o.nombres !== false) {
           g.save(); g.globalAlpha = n.a == null ? 1 : n.a; g.fillStyle = col || (this.gris ? 'rgba(30,26,44,.4)' : 'rgba(30,26,44,.62)');
           g.font = `${(s * .8) | 0}px "Avenir Next", Helvetica, Arial, sans-serif`; g.textAlign = 'center';
-          g.fillText(NOM[pc], cx, Math.max(Y + 6.6 * s, cy + 2.2 * s)); g.restore();
+          g.fillText(N.nombreDe(mVis, aVis), cx, Math.max(Y + 6.6 * s, cy + 2.2 * s)); g.restore();
         }
       });
       // los arcos de los intervalos (3.7 y 3.9)
       this.arcos.forEach(A => {
-        const xa = x0 + A.de * dx, xb = x0 + A.a * dx, ya = this.yDeMidi(A.mDe), yb = this.yDeMidi(A.mA), arriba = A.mA >= A.mDe;
+        const xa = x0 + A.de * dx, xb = x0 + A.a * dx, ya = this.yDeMidi(A.mDe, A.altDe), yb = this.yDeMidi(A.mA, A.altA), arriba = A.mA >= A.mDe;
         const yc = Math.min(ya, yb) - s * 1.4 - (arriba ? 0 : 0);
         g.save(); g.globalAlpha = A.alfa == null ? 1 : A.alfa; g.strokeStyle = A.color; g.fillStyle = A.color; g.lineWidth = 2.6;
         g.beginPath(); g.moveTo(xa + s * .6, ya - s * .5); g.quadraticCurveTo((xa + xb) / 2, yc - s, xb - s * .6, yb - s * .5); g.stroke();
@@ -2139,7 +2207,8 @@ function pauta(padre, x, y, w, h, o = {}) {
 async function transporta(P, pasos, o = {}) {
   const sentido = Math.sign(pasos), dur = o.dur || 150;
   for (let k = 1; k <= Math.abs(pasos); k++) {
-    P.notas.forEach(n => { n.de = n.m; n.m = n.m + sentido; n.u = 0; });
+    P.notas.forEach(n => { n.de = n.m; n.altDe = n.alt; n.m = n.m + sentido; n.u = 0; });
+    P.deletreaYa();
     if (o.alPaso) o.alPaso(k);
     await P.anima(dur, u => P.notas.forEach(n => { n.u = u; }));
     if (o.pausa) await new Promise(r => setTimeout(r, o.pausa));
@@ -2155,12 +2224,13 @@ async function retrograda(P, o = {}) {
       n.oy = Math.sin(Math.PI * e) * P.s * (1.4 + 3.6 * lejos) * (n.slot0 < 5.5 ? -1 : 1); });
   });
   P.notas.forEach(n => { n.slot = n.slot1; n.oy = 0; delete n.slot0; delete n.slot1; });
+  if (!N.lasDos(P.alts())) { P.notas.forEach(n => { n.altDe = n.alt; }); const al = N.deletrea(P.midis()); P.orden().forEach((n, i) => { n.alt = n.altDe = al[i]; }); }
   P.pinta();
 }
 // octava: la nota del sitio «slot» sube (o baja) una octava
 async function octava(P, slot, sentido, o = {}) {
   const n = P.notas.find(x => Math.round(x.slot) === slot); if (!n) return;
-  n.de = n.m; n.m = n.m + 12 * sentido; n.u = 0; n.col = o.color || '#b0472e';
+  n.de = n.m; n.altDe = n.alt; n.m = n.m + 12 * sentido; n.u = 0; n.col = o.color || '#b0472e';
   await P.anima(o.dur || 1100, u => { n.u = u; n.oy = -Math.sin(Math.PI * u) * P.s * 1.2 * sentido; });
   n.oy = 0; P.pinta();
 }
@@ -2170,25 +2240,27 @@ const tst = k => { const t = Math.floor(k / 2), st = k % 2; return [t ? t + 'T' 
 const describe = d => (d > 0 ? 'sube ' : d < 0 ? 'baja ' : 'se queda') + (d ? tst(Math.abs(d)) : '');
 // inversión: sobre la pauta R (referencia, P0) se dibuja cada intervalo; en la pauta D se construye la invertida
 async function invierte(R, D, o = {}) {
-  const p = R.midis(), inv = p.map(m => 2 * p[0] - m), ejemplos = o.ejemplos == null ? 3 : o.ejemplos;
-  D.notas = [{ m: inv[0], de: inv[0], u: 1, slot: 0, oy: 0, a: 1 }]; D.espejo = o.espejo ? inv[0] : null; D.arcos = []; R.arcos = []; D.pinta(); R.pinta();
+  const p = R.midis(), pa = R.alts(), inv = p.map(m => 2 * p[0] - m), ejemplos = o.ejemplos == null ? 3 : o.ejemplos;
+  const ia = N.deletrea(inv, { fija: { 0: pa[0] } });
+  D.notas = [{ m: inv[0], de: inv[0], u: 1, slot: 0, oy: 0, a: 1, alt: ia[0], altDe: ia[0] }]; D.espejo = o.espejo ? inv[0] : null; D.espejoAlt = ia[0];
+  D.arcos = []; R.arcos = []; D.pinta(); R.pinta();
   for (let i = 1; i < 12; i++) {
     const lento = i <= ejemplos, d = p[i] - p[i - 1];
     if (lento) {
-      R.arcos = [{ de: i - 1, a: i, mDe: p[i - 1], mA: p[i], color: '#2e7d78', texto: describe(d), alfa: 0 }];
+      R.arcos = [{ de: i - 1, a: i, mDe: p[i - 1], mA: p[i], altDe: pa[i - 1], altA: pa[i], color: '#2e7d78', texto: describe(d), alfa: 0 }];
       await R.anima(380, u => { R.arcos[0].alfa = u; });
       if (o.alIntervalo) o.alIntervalo(i, d, 'original');
       await new Promise(r => setTimeout(r, o.esperaEjemplo || 650));
     }
-    const nueva = { m: inv[i], de: inv[i - 1], u: 0, slot: i - 1, oy: 0, a: 0, col: lento ? '#b0472e' : null };
+    const nueva = { m: inv[i], de: inv[i - 1], alt: ia[i], altDe: ia[i - 1], u: 0, slot: i - 1, oy: 0, a: 0, col: lento ? '#b0472e' : null };
     D.notas.push(nueva);
-    if (lento) D.arcos = [{ de: i - 1, a: i, mDe: inv[i - 1], mA: inv[i], color: '#b0472e', texto: describe(-d), alfa: 0 }];
+    if (lento) D.arcos = [{ de: i - 1, a: i, mDe: inv[i - 1], mA: inv[i], altDe: ia[i - 1], altA: ia[i], color: '#b0472e', texto: describe(-d), alfa: 0 }];
     if (lento && o.alIntervalo) o.alIntervalo(i, -d, 'invertida');
     await D.anima(lento ? 900 : 230, u => { nueva.u = u; nueva.slot = i - 1 + u; nueva.a = Math.min(1, u * 2); if (lento) D.arcos[0].alfa = Math.min(1, u * 1.6); });
     if (lento) { await new Promise(r => setTimeout(r, o.esperaEjemplo || 650)); nueva.col = null; R.arcos = []; D.arcos = []; R.pinta(); D.pinta(); }
     if (i === ejemplos && o.trasEjemplos) await o.trasEjemplos();
   }
-  D.notas.forEach(n => { n.col = null; }); D.pinta();
+  D.notas.forEach(n => { n.col = null; n.altDe = n.alt; }); D.pinta();
   return inv;
 }
 
@@ -3470,6 +3542,28 @@ const N = window.NOTACION, mod12 = N.mod12, NOM = N.NOM;
 const pia = D.piano.map(m => `aud/piano/${m}.mp3`);
 const SERIE_LIBRO = [2, 10, 7, 3, 0, 8, 11, 9, 6, 4, 1, 5];     // Re Si♭ Sol Mi♭ Do La♭ Si La Sol♭ Mi Re♭ Fa (la del libro)
 const P0 = () => (H.P0 && H.P0.length === 12 ? H.P0 : SERIE_LIBRO);
+// bemoles y sostenidos (Iago, 14-oct por la tarde: «en cada serie… al menos un bemol y al menos un sostenido, cumpliendo las normas.
+// Excepto la del libro porque esa ya está»): la del libro va con sus bemoles, como en el libro; todas las demás, con la norma de
+// notacion.js (N.deletrea: a una tecla negra se llega subiendo → sostenido; bajando → bemol; y siempre hay de los dos)
+const esLibro = pcs => pcs.length === 12 && pcs.every((x, i) => mod12(x) === SERIE_LIBRO[i]);
+const bemoles = ms => ms.map(m => (N.esNegra(m) ? -1 : 0));
+// P0 se escribe UNA vez, igual en todas las paradas: como sale en el reloj de doce (cada nota en la octava del Do4), con la norma;
+// la del libro, con sus bemoles. (El argumento se ignora: la escritura va por posición, sirve para cualquier colocación de P0.)
+const escribeP0 = () => { const s = P0(); return esLibro(s) ? s.map(pc => (N.esNegra(pc) ? -1 : 0)) : N.deletrea(s.map(pc => 60 + pc)); };
+// y cada forma, igual que en los pentagramas animados (colocación de SE.voz): Pn e In por la norma (I0 empieza escrita como P0);
+// R0 y RI0, la escritura de P0 / I0 leída al revés (si así no tiene bemol y sostenido, por la norma); las demás, por la norma
+function escribeForma(f, n = 0) {
+  const v = SE.voz(P0()), pa = escribeP0(), rev = a => a.slice().reverse();
+  const Pk = k => (k ? N.deletrea(v.map(m => m + k)) : pa);
+  const Ik = k => N.deletrea(v.map(m => 2 * v[0] - m + k), k ? {} : { fija: { 0: pa[0] } });
+  if (f === 'P') return Pk(n);
+  if (f === 'I') return Ik(n);
+  const ms = (f === 'R' ? v.map(m => m + n) : v.map(m => 2 * v[0] - m + n)).reverse();
+  if (n) return N.deletrea(ms);
+  const al = rev(f === 'R' ? Pk(0) : Ik(0));
+  return N.lasDos(al) ? al : N.deletrea(ms);
+}
+const dosNombres = pc => (N.esNegra(pc) ? `${N.NOM_S[mod12(pc)]} / ${NOM[mod12(pc)]}` : NOM[mod12(pc)]);      // una tecla negra: sus dos nombres
 const forma = (f, n, s = P0()) => {
   const p = s.map(x => mod12(x + n));
   if (f === 'P') return p;
@@ -3492,7 +3586,9 @@ function pent(padre, x, y, w, h, o = {}) {
     // q.midis: cada nota en su octava (seguida(): sin saltos grandes); sin ella, como antes, todo en la octava del Do4
     const midis = q.midis ? (q.relleno ? q.midis : q.midis.filter((m, i) => pcs[i] != null)) : notas.map(p => 60 + p);
     const Y = q.y || s * 2.2;
-    N.pentagrama(g, { x: s * 1.2, y: Y, w: w - s * 2.4, s, midis, huecos: q.huecos || 12, nombres: true,
+    // la escritura: q.alts (una lista), 'libro' (con bemoles) o, si no, la norma (q.parcial: sin mezclar todavía, la serie está a medias)
+    const alts = Array.isArray(q.alts) ? q.alts : q.alts === 'libro' ? bemoles(midis) : N.deletrea(midis, { mezcla: !q.parcial });
+    N.pentagrama(g, { x: s * 1.2, y: Y, w: w - s * 2.4, s, midis, alts, huecos: q.huecos || 12, nombres: true,
       titulo: q.titulo || '', colorTitulo: '#24304a', resalta: q.resalta, color: q.color || '#2e7d78', doble: q.doble !== false && pcs.length === 12 });
     if (vacios.length) tapaHuecos(vacios, midis, Y, q.siguiente);
   } };
@@ -3588,7 +3684,8 @@ PARADAS.p0 = {
     const marcas = [];
     for (let pc = 0; pc < 12; pc++) {
       const a = -Math.PI / 2 + pc * Math.PI / 6, x = 260 + Math.cos(a) * 205, y = 260 + Math.sin(a) * 205;
-      const b = crea('button', null, `<span>${NOM[pc]}</span><small></small>`, esfera);
+      const b = crea('button', null, `<span>${N.esNegra(pc) ? `${N.NOM_S[pc]}<br>${NOM[pc]}` : NOM[pc]}</span><small></small>`, esfera);
+      if (N.esNegra(pc)) $('span', b).style.cssText = 'font-size: 19px; line-height: 1.12; text-align: center';
       Object.assign(b.style, { position: 'absolute', left: (x - 46) + 'px', top: (y - 46) + 'px', width: '92px', height: '92px', borderRadius: '50%', border: '2px solid rgba(156,201,196,.7)',
         background: 'rgba(14,26,28,.85)', color: 'var(--crema)', font: '600 24px/1 Poppins', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px' });
       $('small', b).style.cssText = 'font: 700 18px/1 Poppins; color: #9cc9c4';
@@ -3600,7 +3697,7 @@ PARADAS.p0 = {
     const P = pent(cuerpo, 740, 300, 1080, 230, { s: 19 });
     function refresca(res) {
       marcas.forEach((b, pc) => { const k = serie.indexOf(pc); $('small', b).textContent = k >= 0 ? k + 1 : ''; b.style.background = k >= 0 ? 'rgba(46,125,120,.9)' : 'rgba(14,26,28,.85)'; });
-      P.dibuja(serie, { titulo: serie.length === 12 ? 'Tu serie: P0' : `P0 · ${serie.length} de 12`, resalta: res });
+      P.dibuja(serie, { titulo: serie.length === 12 ? 'Tu serie: P0' : `P0 · ${serie.length} de 12`, resalta: res, alts: esLibro(serie) ? 'libro' : undefined, parcial: serie.length < 12 });
       if (serie.length) aguja.style.transform = `rotate(${serie[serie.length - 1] * 30}deg)`;
       bSig.disabled = serie.length < 12; bOir.disabled = serie.length < 2;
     }
@@ -3613,12 +3710,14 @@ PARADAS.p0 = {
     function anade(pc) {
       S.despierta();
       if (serie.length >= 12) return;
-      if (serie.includes(pc)) { sfx('candado_error', { gan: .5 }); aviso(msg, `<em>${NOM[pc]}</em> ya ha sonado. Un sonido y su enarmónico cuentan como el mismo: no se repite ninguno hasta que suenen los doce.`, 'mal'); return; }
+      if (serie.includes(pc)) { sfx('candado_error', { gan: .5 }); aviso(msg, `<em>${dosNombres(pc)}</em> ya ha sonado. Un sonido y su enarmónico cuentan como el mismo: no se repite ninguno hasta que suenen los doce.`, 'mal'); return; }
       if (escalita(serie.concat([pc]))) { sfx('candado_error', { gan: .5 }); aviso(msg, 'Nada de escalitas: como mucho, <em>tres</em> notas seguidas por grados conjuntos.', 'mal'); return; }
       serie.push(pc); Piano.toca(60 + pc, { v: .8, dur: .8 }); refresca();
-      // el becuadro: si una nota natural va después de su bemol, hace falta (todo va en un compás)
-      const e = N.ESCR[pc], antes = serie.slice(0, -1).some(q => N.ESCR[q][0] === e[0] && N.ESCR[q][1] === -1);
-      if (e[1] === 0 && antes) aviso(msg, `Ojo: <em>${NOM[pc]}</em> lleva <em>becuadro</em>. Todo va en un compás, así que el bemol de antes seguiría valiendo.`);
+      // el becuadro: si una nota natural va después de la misma nota alterada (con ♭ o con ♯), hace falta (todo va en un compás)
+      const ms = serie.map(q => 60 + q), al = esLibro(serie) ? bemoles(ms) : N.deletrea(ms, { mezcla: serie.length === 12 });
+      const e = N.escr(ms[ms.length - 1], al[al.length - 1]);
+      const previa = ms.slice(0, -1).map((m, i) => N.escr(m, al[i])).filter(x => x[0] === e[0] && x[1] !== 0).pop();
+      if (e[1] === 0 && previa) aviso(msg, `Ojo: <em>${NOM[pc]}</em> lleva <em>becuadro</em>. Todo va en un compás, así que el ${previa[1] < 0 ? 'bemol' : 'sostenido'} de antes seguiría valiendo.`);
       else aviso(msg, serie.length === 12 ? '¡Doce! Esta es <em>tu serie</em>: se llama P0, principal cero.' : `Llevas ${serie.length}. Sigue.`);
       if (serie.length === 12) H.P0 = serie.slice();
     }
@@ -3699,13 +3798,13 @@ PARADAS.dial = {
     await oCancela(Piano.carga());
     const v = SE.voz(P0());
     // dos pentagramas: arriba, P0 en gris (la referencia); abajo, la que se mueve (Iago, 11-oct)
-    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true }); R.pon(v, 'P0 · la de referencia');
-    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17 }); T.pon(v, 'P0');
+    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true }); R.pon(v, 'P0 · la de referencia', { alts: escribeP0(v) });
+    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17 }); T.pon(v, 'P0', { alts: escribeP0(v) });
     const bSig = boton(botones, 'Seguir con la historia', () => ok(), { flecha: true }); bSig.disabled = true;
     conDial(cuerpo, T, 'P', 130, 235, 450, {
       antes: k => aviso(msg, k == null ? 'Cada número que pasa por la flecha es un <em>semitono</em>: toda la serie sube (o baja) con él…'
         : `Hacia el <em>${k}</em>: en cada clic del dial, toda la serie sube un semitono…`),
-      explica: k => aviso(msg, `P${k}: cada nota de P0, <em>${semis(k)}</em> más arriba. ${NOM[P0()[0]]} pasa a ser ${NOM[mod12(P0()[0] + k)]}.`),
+      explica: k => aviso(msg, `P${k}: cada nota de P0, <em>${semis(k)}</em> más arriba. ${R.nombre(0)} pasa a ser ${T.nombre(0)}.`),
       despues: k => { aviso(msg, k ? 'De vuelta a P0. Prueba con otro número… o sigue.' : 'En el 0, la serie se queda como estaba: P0. Gira hasta otro número.'); if (k) bSig.disabled = false; }
     });
     aviso(msg, 'Coge la rueda y gírala hasta que un número quede en la flecha… o pulsa el número.');
@@ -3732,8 +3831,8 @@ PARADAS.retrogrado = {
     const { cuerpo, msg, botones } = abreParada('D04_magnetofono', { filtro: 'blur(3px) brightness(.5)', ceja: 'El magnetófono', titulo: 'Retrógrada', sub: 'La serie, del final al principio.' });
     await oCancela(Piano.carga());
     const v = SE.voz(P0());
-    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true }); R.pon(v, 'P0 · la de referencia');
-    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17, color: '#b0472e' }); T.pon(v, 'P0');
+    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true }); R.pon(v, 'P0 · la de referencia', { alts: escribeP0(v) });
+    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17, color: '#b0472e' }); T.pon(v, 'P0', { alts: escribeP0(v) });
     const B = bobinas(cuerpo, 150, 300);
     let hecha = false, ocupado = false;
     const bP0 = boton(botones, '▶ P0', async () => { if (ocupado) return; ocupado = true; S.despierta(); await suenaPauta(R); ocupado = false; });
@@ -3742,7 +3841,7 @@ PARADAS.retrogrado = {
       aviso(msg, '<em>Retrógrada</em>: cada nota viaja a su sitio del revés; la última pasa a ser la primera.');
       sfx('rebobinar', { gan: .9, bus: 'par' }); B.gira(1.8);
       await SE.retrograda(T, { dur: 1800 });
-      T.titulo = 'R0 · P0 del revés'; T.pinta(); hecha = true; bReb.disabled = true;
+      T.titulo = 'R0 · P0 del revés'; T.fijaBase(); T.pinta(); hecha = true; bReb.disabled = true;
       // «también puedes transportar esta serie»: vuelve el dial, ahora con R0 (Iago, 11-oct). Y desde el 14-oct (Iago, probándolo en
       // Protester): «antes de que se active el botón seguir con la historia… que te obligue a hacer alguna transposición»: «Seguir con
       // la historia» no se enciende hasta que la retrógrada se ha transportado al menos una vez (a un número que no sea el 0).
@@ -3773,8 +3872,8 @@ PARADAS.espejo = {
     const { cuerpo, msg, botones } = abreParada('D05_espejo', { filtro: 'blur(3px) brightness(.5)', ceja: 'El espejo', titulo: 'Inversión', sub: 'Los mismos intervalos, en dirección contraria.' });
     await oCancela(Piano.carga());
     const v = SE.voz(P0());
-    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true, y: 17 * 6.3 }); R.pon(v, 'P0 · la de referencia');
-    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17, color: '#b0472e', y: 17 * 6.3 }); T.pon([v[0]], 'I0 · se va construyendo');
+    const R = SE.pauta(cuerpo, 660, 196, 1200, 262, { s: 17, gris: true, y: 17 * 6.3 }); R.pon(v, 'P0 · la de referencia', { alts: escribeP0(v) });
+    const T = SE.pauta(cuerpo, 660, 470, 1200, 290, { s: 17, color: '#b0472e', y: 17 * 6.3 }); T.pon([v[0]], 'I0 · se va construyendo', { alts: [escribeP0(v)[0]] });
     let hecha = false, ocupado = false;
     const bP0 = boton(botones, '▶ P0', async () => { if (ocupado) return; ocupado = true; S.despierta(); await suenaPauta(R); ocupado = false; });
     const bInv = boton(botones, '⇅ Invertir', async () => {
@@ -3783,13 +3882,13 @@ PARADAS.espejo = {
         alIntervalo: (i, d, cual) => {
           const ms = cual === 'original' ? R.midis() : null;
           if (cual === 'original') { Piano.toca(ms[i - 1], { v: .75, dur: .5 }); Piano.toca(ms[i], { t: .45, v: .75, dur: .7 });
-            aviso(msg, `En P0, de ${NOM[mod12(ms[i - 1])]} a ${NOM[mod12(ms[i])]}: <em>${SE.describe(d)}</em>…`); }
+            aviso(msg, `En P0, de ${R.nombre(i - 1)} a ${R.nombre(i)}: <em>${SE.describe(d)}</em>…`); }
           else { const m = T.notas[T.notas.length - 1]; Piano.toca(m.de, { v: .75, dur: .5 }); Piano.toca(m.m, { t: .45, v: .75, dur: .7 });
             aviso(msg, `…así que en I0, <em>${SE.describe(d)}</em>: el mismo intervalo, en dirección contraria.`); }
         },
         trasEjemplos: async () => { aviso(msg, 'Y así, intervalo a intervalo, <em>hasta completar</em> la serie…'); await espera(900); } });
-      T.espejo = null; T.titulo = 'I0 · P0 en el espejo'; T.pinta(); hecha = true; bInv.disabled = true;
-      H.I0voz = T.midis();
+      T.espejo = null; T.titulo = 'I0 · P0 en el espejo'; T.fijaBase(); T.pinta(); hecha = true; bInv.disabled = true;
+      H.I0voz = T.midis(); H.I0alts = T.alts();
       // como en la retrógrada (Iago, 14-oct): «Seguir con la historia» espera a que la invertida se transporte al menos una vez;
       // y el dial, también YA, mientras suena I0 (un poco apagado: «Escucha I0…»)
       const c = SE.cartelito(cuerpo, 110, 186, '<b>Ahora, transpórtala.</b><br>Gira el dial (o pulsa un número): I0 sube igual que subía P0. Hazlo al menos una vez para poder seguir.', { ancho: 500 });
@@ -3832,7 +3931,8 @@ PARADAS.octava = {
     const cuales = [abajo, arriba].filter(Boolean).sort((a, b) => a.i - b.i);
     cuales.forEach(c => { base[c.i] = c.m; });          // en su sitio «bueno», al pie o en lo alto del pentagrama
     const escrita = base.slice(); cuales.forEach(c => { escrita[c.i] = c.a; });
-    const T = SE.pauta(cuerpo, 300, 290, 1320, 330, { s: 18, color: '#b0472e', y: 18 * 7.2 }); T.pon(escrita, 'I0 · así la escribió alguien');
+    const mismaI0 = H.I0voz && H.I0alts && H.I0voz.length === 12 && H.I0voz.every((m, i) => mod12(m) === mod12(base[i]));
+    const T = SE.pauta(cuerpo, 300, 290, 1320, 330, { s: 18, color: '#b0472e', y: 18 * 7.2 }); T.pon(escrita, 'I0 · así la escribió alguien', { alts: mismaI0 ? H.I0alts : N.deletrea(base) });
     cuales.forEach(c => { T.notas[c.i].col = '#b0472e'; }); T.pinta();
     let ocupado = false;
     const bMueve = boton(botones, cuales.length > 1 ? '↕ Cambiarlas de octava' : '↕ Cambiarla de octava', async () => {
@@ -3840,7 +3940,7 @@ PARADAS.octava = {
       for (const c of cuales) {
         const m = T.notas.find(n => Math.round(n.slot) === c.i).m, oct = Math.round((c.m - m) / 12), sentido = Math.sign(oct);
         Piano.toca(m, { v: .8, dur: .7 });
-        const ct = SE.cartelito(cuerpo, Math.min(1420, 300 + 40 + c.i * 92), 176, `Este ${NOM[mod12(m)]}, tan ${sentido > 0 ? 'abajo' : 'arriba'}, molesta: ${Math.abs(oct) > 1 ? 'dos octavas' : 'una octava'} más ${sentido > 0 ? 'arriba' : 'abajo'}…`, { ancho: 360 });
+        const ct = SE.cartelito(cuerpo, Math.min(1420, 300 + 40 + c.i * 92), 176, `Este ${T.nombre(c.i)}, tan ${sentido > 0 ? 'abajo' : 'arriba'}, molesta: ${Math.abs(oct) > 1 ? 'dos octavas' : 'una octava'} más ${sentido > 0 ? 'arriba' : 'abajo'}…`, { ancho: 360 });
         for (let k = 0; k < Math.abs(oct); k++) await SE.octava(T, c.i, sentido);
         Piano.toca(c.m, { v: .8, dur: .9 });
         await espera(1000); ct.quita();
@@ -3861,11 +3961,11 @@ PARADAS.octava = {
       fants = fants.filter(f => ahora - f.t0 < F_DUR);
       fants.forEach(f => {
         const e = Math.min(1, (ahora - f.t0) / F_ENTRA), alfa = Math.min(e, Math.max(0, (f.t0 + F_DUR - ahora) / F_SALE));
-        const cx = T.xDe(f.slot), cy = T.yDeMidi(f.m), yE = T.yDeMidi(f.de), arriba = f.m > f.de, paso = N.pasoDe(f.m);
+        const cx = T.xDe(f.slot), cy = T.yDeMidi(f.m, f.alt), yE = T.yDeMidi(f.de, f.alt), arriba = f.m > f.de, paso = N.pasoEsc(f.m, f.alt);
         g.save(); g.globalAlpha = alfa; g.strokeStyle = col; g.fillStyle = col; g.lineWidth = Math.max(1, s * .085);
         if (paso <= 28) for (let ls = 28; ls >= paso - .5; ls -= 2) { const ly = T.yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
         if (paso >= 40) for (let ls = 40; ls <= paso + .5; ls += 2) { const ly = T.yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
-        if (N.ESCR[mod12(f.m)][1] === -1) N.bemol(g, cx - s * 1.32, cy, s);
+        N.alteracion(g, N.escr(f.m, f.alt), cx, cy, s, {});
         // la nota, con un pequeño golpe al aparecer
         const esc = 1 + .5 * Math.pow(1 - e, 2);
         g.save(); g.translate(cx, cy); g.scale(esc, esc); g.translate(-cx, -cy); N.redonda(g, cx, cy, s); g.restore();
@@ -3887,7 +3987,8 @@ PARADAS.octava = {
       // cada nota en una octava al azar (la de arriba, la de abajo o la escrita), sin salirse del papel
       const ms = T.midis(), oct = ms.map(m => { const v = [-1, 0, 1].filter(k => { const p = N.pasoDe(m + 12 * k); return p >= 18 && p <= 49; }); return v[Math.floor(Math.random() * v.length)]; });
       let vivo = true; const fr = () => { if (!vivo) return; T.pinta(); requestAnimationFrame(fr); }; requestAnimationFrame(fr);
-      const t = tocaM(ms.map((m, i) => m + 12 * oct[i]), { cada: i => { T.resalta = i; if (oct[i]) fants.push({ slot: i, m: ms[i] + 12 * oct[i], de: ms[i], t0: performance.now() }); } });
+      const as = T.alts();
+      const t = tocaM(ms.map((m, i) => m + 12 * oct[i]), { cada: i => { T.resalta = i; if (oct[i]) fants.push({ slot: i, m: ms[i] + 12 * oct[i], de: ms[i], alt: as[i], t0: performance.now() }); } });
       await espera(t * 1000); await espera(F_DUR - 300); vivo = false; fants = []; T.resalta = -1; T.pinta();
       aviso(msg, 'Cada nota en una octava al azar (las que cambian se ven un momento donde suenan)… y el <em>orden</em> es el mismo: sigue siendo la misma serie.'); ocupado = false; bSig.disabled = false;
     });
@@ -3908,8 +4009,8 @@ PARADAS.cajones = {
     const v = SE.voz(P0());
     const rej = crea('div', 'cajones', null, cuerpo);
     Object.assign(rej.style, { position: 'absolute', left: '240px', top: '200px', display: 'grid', gridTemplateColumns: '90px repeat(12, 102px)', gap: '6px' });
-    const R = SE.pauta(cuerpo, 300, 440, 1000, 175, { s: 13, gris: true }); R.pon(v, 'P0');
-    const T = SE.pauta(cuerpo, 300, 625, 1000, 215, { s: 14, color: '#b0472e' }); T.pon(v, 'P0');
+    const R = SE.pauta(cuerpo, 300, 440, 1000, 175, { s: 13, gris: true }); R.pon(v, 'P0', { alts: escribeP0(v) });
+    const T = SE.pauta(cuerpo, 300, 625, 1000, 215, { s: 14, color: '#b0472e' }); T.pon(v, 'P0', { alts: escribeP0(v) });
     let ocupado = false, abiertos = 0;
     const cajon = [];
     ['P', 'R', 'I', 'RI'].forEach(f => {
@@ -3930,7 +4031,7 @@ PARADAS.cajones = {
     async function abre(f, k, b) {
       if (ocupado) return; ocupado = true; quieto(true); S.despierta(); sfx('madera_3', { gan: .35, bus: 'par' });
       b.style.boxShadow = '0 0 0 4px #ffd36e';
-      T.pon(v, 'P0'); T.arcos = []; T.espejo = null;
+      T.pon(v, 'P0', { alts: escribeP0(v) }); T.arcos = []; T.espejo = null;
       const pasos = (f === 'I' || f === 'RI' ? 1 : 0) + (f === 'R' || f === 'RI' ? 1 : 0) + (k ? 1 : 0);
       let n = 0; const orden = () => pasos < 2 ? '' : (n++ ? 'Ahora, ' : 'Primero, ');
       await espera(400);
@@ -3974,14 +4075,15 @@ PARADAS.completa = {
     let e = 0, elegidas = [];
     const A = pent(cuerpo, 300, 230, 1320, 180, { s: 15 }), B = pent(cuerpo, 300, 440, 1320, 180, { s: 15 });
     const paleta = crea('div', null, null, cuerpo); Object.assign(paleta.style, { position: 'absolute', left: '300px', top: '650px', width: '1320px', display: 'flex', gap: '8px', justifyContent: 'center' });
-    NOM.forEach((nm, pc) => { const b = crea('button', 'bot', nm, paleta); b.style.padding = '12px 16px'; b.style.fontSize = '22px'; b.onclick = () => elige(pc); });
+    // las teclas negras, con sus dos nombres (en la ficha cada una sale escrita con ♭ o con ♯)
+    NOM.forEach((nm, pc) => { const b = crea('button', 'bot', N.esNegra(pc) ? `${N.NOM_S[pc]}<br>${nm}` : nm, paleta); b.style.padding = N.esNegra(pc) ? '5px 12px' : '12px 16px'; b.style.fontSize = N.esNegra(pc) ? '18px' : '22px'; b.style.lineHeight = '1.1'; b.onclick = () => elige(pc); });
     function pinta() {
       const E = ejercicios[e], s = forma(E.f, E.n);
-      A.dibuja(P0(), { titulo: 'P0', midis: seguida(P0()) });
+      A.dibuja(P0(), { titulo: 'P0', midis: seguida(P0()), alts: escribeP0() });
       const vista = s.map((pc, i) => E.faltan.includes(i) ? (elegidas[E.faltan.indexOf(i)] != null ? elegidas[E.faltan.indexOf(i)] : null) : pc);
       // los huecos salen vacíos, con «?»; el siguiente que hay que rellenar, marcado en rojo
       const quedan = E.faltan.length - elegidas.filter(x => x != null).length;
-      B.dibuja(vista, { relleno: s, midis: seguida(s), siguiente: E.faltan[elegidas.length], titulo: `${E.f}${E.n} · ${quedan ? `faltan ${quedan}` : 'completa'}`, color: '#b0472e' });
+      B.dibuja(vista, { relleno: s, midis: seguida(s), alts: escribeForma(E.f, E.n), siguiente: E.faltan[elegidas.length], titulo: `${E.f}${E.n} · ${quedan ? `faltan ${quedan}` : 'completa'}`, color: '#b0472e' });
     }
     function elige(pc) {
       const E = ejercicios[e], s = forma(E.f, E.n), k = elegidas.length;
@@ -3989,8 +4091,9 @@ PARADAS.completa = {
       const cerca = k < E.faltan.length ? seguida(s)[E.faltan[k]] : 66, m = cerca + ((mod12(pc - cerca) + 6) % 12) - 6;
       S.despierta(); Piano.toca(m, { v: .8, dur: .6 });
       if (k >= E.faltan.length) return;
-      if (s[E.faltan[k]] === pc) { elegidas.push(pc); aviso(msg, `Bien: <em>${NOM[pc]}</em>.`); }
-      else { aviso(msg, `${NOM[pc]} no va ahí. Piensa: ${E.f === 'R' ? 'la retrógrada es P0 al revés' : 'la inversión hace los intervalos al revés'}.`, 'mal'); return; }
+      const ms = seguida(s), al = escribeForma(E.f, E.n);
+      if (s[E.faltan[k]] === pc) { elegidas.push(pc); aviso(msg, `Bien: <em>${N.nombreDe(ms[E.faltan[k]], al[E.faltan[k]])}</em>.`); }
+      else { aviso(msg, `${dosNombres(pc)} no va ahí. Piensa: ${E.f === 'R' ? 'la retrógrada es P0 al revés' : 'la inversión hace los intervalos al revés'}.`, 'mal'); return; }
       pinta();
       if (elegidas.length === E.faltan.length) {
         if (e < ejercicios.length - 1) { aviso(msg, `¡${E.f}${E.n} completa! Ahora, otra.`); setTimeout(() => { e++; elegidas = []; pinta(); }, 1800); }
@@ -4011,7 +4114,7 @@ PARADAS.identifica = {
     const casos = [{ f: 'P', n: 3 }, { f: 'R', n: 0 }, { f: 'I', n: 5 }];
     let c = 0, letra = null;
     // P0 a la vista, para poder comparar (Iago, 11-oct: «tienes que mostrar la P0 para poder compararlo»)
-    const R0 = pent(cuerpo, 300, 205, 1320, 150, { s: 13 }); R0.dibuja(P0(), { titulo: 'P0 · para comparar', color: '#2e7d78', midis: seguida(P0()) }); R0.cv.style.opacity = .85;
+    const R0 = pent(cuerpo, 300, 205, 1320, 150, { s: 13 }); R0.dibuja(P0(), { titulo: 'P0 · para comparar', color: '#2e7d78', midis: seguida(P0()), alts: escribeP0() }); R0.cv.style.opacity = .85;
     const A = pent(cuerpo, 300, 365, 1320, 160, { s: 14 });
     const fila1 = crea('div', null, null, cuerpo), fila2 = crea('div', null, null, cuerpo);
     [fila1, fila2].forEach((f, i) => Object.assign(f.style, { position: 'absolute', left: '300px', top: (560 + i * 86) + 'px', width: '1320px', display: 'flex', gap: '10px', justifyContent: 'center' }));
@@ -4020,7 +4123,7 @@ PARADAS.identifica = {
     const marcaLetra = b => [...fila1.children].forEach(x => { x.classList.toggle('lleno', x === b); x.classList.toggle('elegido', x === b); });
     ['P', 'R', 'I'].forEach(l => { const b = crea('button', 'bot', l, fila1); b.style.padding = '14px 30px'; b.onclick = () => { letra = l; marcaLetra(b); }; });
     for (let k = 0; k < 12; k++) { const b = crea('button', 'bot', k, fila2); b.style.padding = '12px 18px'; b.style.fontSize = '22px'; b.onclick = () => responde(k); }
-    function pinta() { const C = casos[c], fr = forma(C.f, C.n); A.dibuja(fr, { titulo: `Fragmento ${c + 1} de ${casos.length}`, midis: seguida(fr) }); tocaM(seguida(fr), { paso: .3 }); }
+    function pinta() { const C = casos[c], fr = forma(C.f, C.n); A.dibuja(fr, { titulo: `Fragmento ${c + 1} de ${casos.length}`, midis: seguida(fr), alts: escribeForma(C.f, C.n) }); tocaM(seguida(fr), { paso: .3 }); }
     function responde(k) {
       S.despierta(); if (!letra) { aviso(msg, 'Primero la letra: P, R o I.', 'mal'); return; }
       const C = casos[c];
@@ -4079,6 +4182,7 @@ PARADAS.integral = {
     await oCancela(Piano.carga());
     const v = SE.voz(P0());
     const series = { alt: v.slice(), fig: FIGURAS.slice(), din: DINAMICAS.map((d, i) => i), ins: [0, 1, 2, 3] };
+    const esc = escribeP0(v);            // cómo se escribe cada sonido de P0 (la del libro, con sus bemoles)
     // las cuatro series (arriba): fichas que se iluminan con cada nota
     const panel = crea('div', 'integral', null, cuerpo);
     Object.assign(panel.style, { position: 'absolute', left: '150px', top: '196px', width: '1620px', display: 'grid', gridTemplateColumns: '210px 1fr', rowGap: '10px', alignItems: 'center' });
@@ -4087,7 +4191,7 @@ PARADAS.integral = {
       crea('div', 'inom', nombre, panel); filas[k] = crea('div', 'ifila', null, panel);
     });
     function pintaFilas() {
-      filas.alt.innerHTML = series.alt.map(m => `<span>${NOM[mod12(m)]}</span>`).join('');
+      filas.alt.innerHTML = series.alt.map((m, i) => `<span>${N.nombreDe(m, esc[i])}</span>`).join('');
       filas.fig.innerHTML = ''; series.fig.forEach(val => { const c = crea('canvas', 'ifig', null, crea('span', null, null, filas.fig)); c.width = 120; c.height = 96;
         const g = c.getContext('2d'); g.scale(2, 2); g.fillStyle = g.strokeStyle = '#f0e8da'; figura(g, 26, 34, 7, val, true); c.title = NOMFIG[val]; });
       filas.din.innerHTML = series.din.map(i => `<span class="din">${DINAMICAS[i][0]}</span>`).join('');
@@ -4111,12 +4215,12 @@ PARADAS.integral = {
         g.fillStyle = g.strokeStyle = '#14121C'; N.claveSol(g, X0 - 25, y + 3 * sP, sP); g.restore();
       });
       notas.forEach((n, i) => {
-        const y = Y0 + n.ins * ALTO, yBase = y + 4 * sP, paso = N.pasoDe(n.m), cy = yBase - (paso - 30) * (sP / 2), e = N.ESCR[mod12(n.m)];
+        const y = Y0 + n.ins * ALTO, yBase = y + 4 * sP, paso = N.pasoEsc(n.m, esc[n.i]), cy = yBase - (paso - 30) * (sP / 2), e = N.escr(n.m, esc[n.i]);
         const col = i === actual ? INSTRUMENTOS[n.ins].col : '#14121C';
         g.save(); g.fillStyle = g.strokeStyle = col; g.lineWidth = 1;
         if (paso <= 28) for (let ls = 28; ls >= paso; ls -= 2) { const ly = yBase - (ls - 30) * (sP / 2); g.beginPath(); g.moveTo(n.x - sP, ly); g.lineTo(n.x + sP, ly); g.stroke(); }
         if (paso >= 40) for (let ls = 40; ls <= paso; ls += 2) { const ly = yBase - (ls - 30) * (sP / 2); g.beginPath(); g.moveTo(n.x - sP, ly); g.lineTo(n.x + sP, ly); g.stroke(); }
-        if (e[1] === -1) N.bemol(g, n.x - sP * 1.35, cy, sP);
+        if (e[1] === -1) N.bemol(g, n.x - sP * 1.35, cy, sP); else if (e[1] === 1) N.sostenido(g, n.x - sP * 1.35, cy, sP);
         figura(g, n.x, cy, sP, n.fig, paso < 34);
         g.font = 'italic 700 15px Lora, Georgia, serif'; g.textAlign = 'center'; g.fillText(DINAMICAS[n.din][0], n.x, y + 4 * sP + 22);
         g.restore();
@@ -4140,7 +4244,7 @@ PARADAS.integral = {
           if (k !== actual && k >= 0) {
             actual = k; const n = plan[k]; notas = plan.slice(0, k + 1); insActual = n.ins;
             enciende('alt', k); enciende('fig', k % 6); enciende('din', k % 6); enciende('ins', k % 4);
-            msg.innerHTML = `Nota ${k + 1}: <em>${NOM[mod12(n.m)]}</em>, ${NOMFIG[n.fig]}, <em>${DINAMICAS[n.din][0]}</em>, ${INSTRUMENTOS[n.ins].n.toLowerCase()}.`;
+            msg.innerHTML = `Nota ${k + 1}: <em>${N.nombreDe(n.m, esc[n.i])}</em>, ${NOMFIG[n.fig]}, <em>${DINAMICAS[n.din][0]}</em>, ${INSTRUMENTOS[n.ins].n.toLowerCase()}.`;
             partitura();
           }
           if (ahora < t + .4) requestAnimationFrame(cuadro); else fin();
