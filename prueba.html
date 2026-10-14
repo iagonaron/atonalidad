@@ -2895,7 +2895,7 @@ PARADAS.asi_wagner = {
     const relleno = $('.tubo i', med), raya = $('.tubo b', med);
     const ctx = cv.getContext('2d');
     const notas = W.notas, lo = 50, hi = 80, ventana = 12;     // segundos a la vista
-    let t0 = null, h = null, vMed = .12, tPrev = null;
+    let t0 = null, h = null, vMed = .12, tPrev = null, tPared = 0;
     function tensionEn(t) { const r = TENSION; if (t <= r[0][0]) return r[0][1]; for (let i = 1; i < r.length; i++) if (t < r[i][0]) { const a = r[i - 1], b = r[i]; return a[1] + (b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); } return r[r.length - 1][1]; }
     const mezcla = (a, b, f) => a.map((x, k) => Math.round(x + (b[k] - x) * f));
     function pinta() {
@@ -2924,14 +2924,24 @@ PARADAS.asi_wagner = {
       const v = t0 == null ? .12 : vMed;
       const c1 = mezcla([255, 231, 176], [255, 92, 64], Math.min(1, v * 1.15)), c2 = mezcla([196, 148, 92], [190, 40, 30], Math.min(1, v * 1.15));
       relleno.style.height = (v * 100) + '%'; relleno.style.background = `linear-gradient(rgb(${c1}), rgb(${c2}))`; raya.style.bottom = `calc(${v * 100}% - 2px)`;
-      if (t0 != null && t > W.duracion_s + .3) { t0 = null; terminado(); }
+      // el final, por el reloj del audio… o por el de la pared, si el audio no avanza (contexto de audio parado)
+      if (t0 != null && (t > W.duracion_s + .3 || performance.now() - tPared > (W.duracion_s + 4) * 1000)) { t0 = null; terminado(); }
       if (vivo) requestAnimationFrame(pinta);
     }
     let vivo = true; pinta();
+    // Iago, 14-oct por la tarde (probándolo con Antonio): «el Wagner, Tristán e Isolda se quedó bugueado… bloqueado». Esa tarde la
+    // conexión falló un rato (los fondos del capítulo 2 tampoco llegaban): si el audio no llegaba, «Escuchar» no hacía nada y «Seguir»
+    // no se encendía nunca. Ahora: se vuelve a pedir (motor.js), y si en 12 s no ha llegado o falla, se puede seguir igualmente
+    const sinAudio = txt => { if (!vivo) return; bEsc.disabled = false; bSig.disabled = false; msg.innerHTML = txt; };
     const bEsc = boton(botones, '▶ Escuchar', async () => {
-      if (h) h.para(.2); await oCancela(S.carga('aud/tristan.mp3'));
+      if (h) h.para(.2);
+      bEsc.disabled = true; msg.innerHTML = 'Un momento…';
+      const vigia = setTimeout(() => { if (t0 == null) sinAudio('El audio no llega (¿la conexión?). Prueba otra vez… o sigue con la historia.'); }, 12000);
+      try { await oCancela(S.carga('aud/tristan.mp3')); }
+      catch (e) { clearTimeout(vigia); if (e === H.ABORTO) throw e; sinAudio('No se ha podido cargar el audio (¿la conexión?). Prueba otra vez… o sigue con la historia.'); return; }
+      clearTimeout(vigia); S.despierta();
       h = S.uno('aud/tristan.mp3', { bus: 'par', gan: 1 });
-      t0 = S.ctx.currentTime + .05; vMed = .12; tPrev = null; msg.innerHTML = 'Fíjate en el medidor de tensión…'; bEsc.disabled = true;
+      t0 = S.ctx.currentTime + .05; tPared = performance.now() + 50; vMed = .12; tPrev = null; msg.innerHTML = 'Fíjate en el medidor de tensión…'; bEsc.disabled = true;
     }, { lleno: true });
     const bSig = boton(botones, 'Seguir con la historia', () => { vivo = false; if (h) h.para(.6); ok(); }, { flecha: true }); bSig.disabled = true;
     function terminado() { bEsc.disabled = false; bEsc.querySelector('span').textContent = '▶ Otra vez'; bSig.disabled = false;
