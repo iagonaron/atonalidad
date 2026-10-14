@@ -4,6 +4,40 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
+<!-- LM at home · SELECCIONADOR DE VOLUNTARIOS (14-oct-2026, Claude para Iago). Solo con la cuenta Protester: el medallero de
+     gp.lmathome.es abre este portal con «#c=<cuenta>»; aquí se quita de la dirección, se guarda en este navegador y se carga
+     el seleccionador de https://gp.lmathome.es/voluntarios/ (botón «Voluntarios» arriba a la derecha, activo en la hora de clase).
+     A los alumnos no les hace nada. Quitarlo de este portal: borrar este bloque (y su regla #bVoluntarios del CSS). -->
+<script>
+window.LM_VOL_CONFIG = function () {
+  return {
+      portal: 'atonalidad', tema: 'museo',
+      boton: { padre: '#mandos', antes: '#bPausa', clase: 'bot', id: 'bVoluntarios' },
+      sonidos: { tic: ['atonalidad/aud/sfx/candado_tic_1.mp3', 'atonalidad/aud/sfx/candado_tic_2.mp3', 'atonalidad/aud/sfx/candado_tic_3.mp3'],
+                 encaja: 'atonalidad/aud/sfx/candado_encaja.mp3', abre: 'atonalidad/aud/sfx/candado_abre.mp3' },
+      // si la historia está en marcha, se pone en pausa (al cerrar la ruleta, «Seguir» como siempre)
+      alAbrir: function () { try { var H = window.AT, e = document.getElementById('escena'); if (H && H.pausa && H.Reloj && !H.Reloj.pausa && e && e.classList.contains('historia')) H.pausa(true); } catch (x) {} }
+    };
+};
+(function () {
+  try {
+    var m = /(?:^#|&)c=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.hash || ''), c = null;
+    if (m) {
+      c = m[1].toLowerCase(); try { localStorage.setItem('lm_vol_cuenta', c); } catch (e) {}
+      try { var h = location.hash.replace(/^#/, '').split('&').filter(function (p) { return p && !/^c=/.test(p); }).join('&');
+            history.replaceState(history.state, '', location.pathname + location.search + (h ? '#' + h : '')); } catch (e) {}
+    } else { try { c = localStorage.getItem('lm_vol_cuenta'); } catch (e) {} }
+    if (!c) return;
+    var s = document.createElement('script'); s.async = true;
+    s.src = 'https://gp.lmathome.es/voluntarios/lm-voluntarios.js?h=' + Math.floor(Date.now() / 36e5);
+    s.onload = function () {
+      var ir = function () { try { if (window.LMVoluntarios) window.LMVoluntarios.monta(window.LM_VOL_CONFIG()); } catch (e) {} };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ir); else ir();
+    };
+    document.head.appendChild(s);
+  } catch (e) {}
+})();
+</script>
 <title>Atonalidad · El museo (prueba)</title>
 <link rel="icon" href="atonalidad/icono/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="atonalidad/icono/apple-touch-icon.png">
@@ -389,6 +423,16 @@ canvas.frag.parpadea { animation: fragParpadea .9s ease-in-out infinite; }
   box-shadow: 0 26px 80px rgba(0, 0, 0, .7), inset 0 0 0 6px #1b1712; z-index: 12; pointer-events: none; transform: translate(-50%, -50%); }
 .obrasCartel .franja { height: 48px; background: repeating-linear-gradient(-45deg, #1b1712 0 34px, #f4c21b 34px 68px); }
 .obrasCartel .txt { font: 700 88px/1 var(--tit); letter-spacing: .05em; color: #1b1712; text-align: center; padding: 38px 64px 34px; white-space: nowrap; }
+
+/* ═══ (14-oct-2026) el seleccionador de voluntarios: solo con la cuenta Protester (el botón lo crea lm-voluntarios.js, de gp.lmathome.es) ═══
+   Arriba a la derecha, a la izquierda de la pausa y la pantalla completa; por encima de la portada, igual que la pantalla completa. */
+#bVoluntarios { position: absolute; top: 20px; right: 104px; height: 64px; padding: 0 24px 0 20px; gap: 12px; border-radius: 14px; font: 600 24px/1 var(--tit); letter-spacing: .02em; z-index: 55;
+  transition: right .3s ease, background .2s, transform .15s, border-color .2s; }
+#escena.historia #bVoluntarios { right: 182px; }
+#bVoluntarios .lmv-ico { width: 30px; height: 30px; stroke-width: 1.7; }
+#escena:not(.noche):not(.frio) #bVoluntarios { color: #f1d9a2; }
+#escena.noche #bVoluntarios, #escena.frio #bVoluntarios { color: #dfe8d6; }
+#bPantalla { z-index: 55; }
 
 </style>
 </head>
@@ -3561,7 +3605,7 @@ PARADAS.dial = {
       antes: k => aviso(msg, k == null ? 'Cada número que pasa por la flecha es un <em>semitono</em>: toda la serie sube (o baja) con él…'
         : `Hacia el <em>${k}</em>: en cada clic del dial, toda la serie sube un semitono…`),
       explica: k => aviso(msg, `P${k}: cada nota de P0, <em>${semis(k)}</em> más arriba. ${NOM[P0()[0]]} pasa a ser ${NOM[mod12(P0()[0] + k)]}.`),
-      despues: k => { aviso(msg, k ? 'De vuelta a P0. Prueba con otro número… o sigue.' : 'En el 0, la serie se queda como estaba: P0. Gira hasta otro número.'); bSig.disabled = false; }
+      despues: k => { aviso(msg, k ? 'De vuelta a P0. Prueba con otro número… o sigue.' : 'En el 0, la serie se queda como estaba: P0. Gira hasta otro número.'); if (k) bSig.disabled = false; }
     });
     aviso(msg, 'Coge la rueda y gírala hasta que un número quede en la flecha… o pulsa el número.');
   })
@@ -3581,7 +3625,7 @@ function bobinas(cuerpo, x, y) {          // dos bobinas y la cinta; giran al re
   return { el: c, gira(seg, sentido = -1) { bs.forEach(b => b.animate([{ transform: 'rotate(0deg)' }, { transform: `rotate(${sentido * 1440}deg)` }], { duration: seg * 1000, easing: 'cubic-bezier(.4,0,.3,1)' })); } };
 }
 PARADAS.retrogrado = {
-  cartel: ['Retrógrada', 'Escucha P0 y luego pulsa «Retrógrada»: la serie, del final al principio. Después, también podrás transportarla.'],
+  cartel: ['Retrógrada', 'Escucha P0 y luego pulsa «Retrógrada»: la serie, del final al principio. Después, transpórtala con el dial (al menos una vez) para poder seguir.'],
   precarga: pia.concat(CLICS, ['aud/sfx/rebobinar.mp3']),
   abre: () => new Promise(async ok => {
     const { cuerpo, msg, botones } = abreParada('D04_magnetofono', { filtro: 'blur(3px) brightness(.5)', ceja: 'El magnetófono', titulo: 'Retrógrada', sub: 'La serie, del final al principio.' });
@@ -3601,15 +3645,17 @@ PARADAS.retrogrado = {
       await espera(300); await suenaPauta(T);
       const ult = T.midis()[11];
       aviso(msg, `R0 es P0 leída del final al principio. Su número se mira en su <em>última</em> nota: termina en ${NOM[mod12(ult)]}, como empezaba P0.`);
-      bReb.disabled = true; bSig.disabled = false; ocupado = false;
+      bReb.disabled = true; ocupado = false;
       await espera(1600);
-      // «también puedes transportar esta serie»: vuelve el dial, ahora con R0 (Iago, 11-oct)
-      const c = SE.cartelito(cuerpo, 110, 186, '<b>También puedes transportar esta serie.</b><br>Gira el dial (o pulsa un número): R0 sube igual que subía P0.', { ancho: 500 });
+      // «también puedes transportar esta serie»: vuelve el dial, ahora con R0 (Iago, 11-oct). Y desde el 14-oct (Iago, probándolo en
+      // Protester): «antes de que se active el botón seguir con la historia… que te obligue a hacer alguna transposición»: «Seguir con
+      // la historia» no se enciende hasta que la retrógrada se ha transportado al menos una vez (a un número que no sea el 0).
+      const c = SE.cartelito(cuerpo, 110, 186, '<b>Ahora, transpórtala.</b><br>Gira el dial (o pulsa un número): R0 sube igual que subía P0. Hazlo al menos una vez para poder seguir.', { ancho: 500 });
       B.el.style.opacity = '0'; setTimeout(() => B.el.remove(), 500);
       conDial(cuerpo, T, 'R', 160, 398, 360, {
         antes: k => { c.quita(); aviso(msg, k == null ? 'Cada número que pasa por la flecha es un <em>semitono</em>: toda la retrógrada sube (o baja) con él…' : `R${k}: toda la retrógrada sube, de semitono en semitono…`); },
         explica: k => aviso(msg, `R${k}: la retrógrada, <em>${semis(k)}</em> más arriba (es P${k} al revés).`),
-        despues: k => aviso(msg, k ? 'Vuelve a R0. Prueba con otro número… o sigue.' : 'En el 0, la retrógrada se queda como estaba: R0.')
+        despues: k => { aviso(msg, k ? 'Vuelve a R0. Prueba con otro número… o sigue.' : 'En el 0, la retrógrada se queda como estaba: R0. Gira hasta otro número.'); if (k) bSig.disabled = false; }
       });
     }, { lleno: true });
     const bSig = boton(botones, 'Seguir con la historia', () => ok(), { flecha: true }); bSig.disabled = true;
@@ -3619,7 +3665,7 @@ PARADAS.retrogrado = {
 
 /* ═════════ ▶ EL ESPEJO · la inversión (3.7) ═════════ */
 PARADAS.espejo = {
-  cartel: ['Inversión', 'Mira cómo se invierte la serie: cada intervalo, el mismo, pero en dirección contraria. Después podrás transportar la invertida.'],
+  cartel: ['Inversión', 'Mira cómo se invierte la serie: cada intervalo, el mismo, pero en dirección contraria. Después, transporta la invertida con el dial (al menos una vez) para poder seguir.'],
   precarga: pia.concat(CLICS),
   abre: () => new Promise(async ok => {
     const { cuerpo, msg, botones } = abreParada('D05_espejo', { filtro: 'blur(3px) brightness(.5)', ceja: 'El espejo', titulo: 'Inversión', sub: 'Los mismos intervalos, en dirección contraria.' });
@@ -3643,14 +3689,15 @@ PARADAS.espejo = {
       T.espejo = null; T.titulo = 'I0 · P0 en el espejo'; T.pinta(); hecha = true;
       await espera(300); await suenaPauta(T);
       aviso(msg, 'Lo que en P0 sube, en I0 baja (y al revés), siempre el mismo intervalo. Eso es la <em>inversión</em>.');
-      bInv.disabled = true; bSig.disabled = false; ocupado = false;
+      bInv.disabled = true; ocupado = false;
       H.I0voz = T.midis();
       await espera(1600);
-      const c = SE.cartelito(cuerpo, 110, 186, '<b>También puedes transportar la invertida.</b><br>Gira el dial (o pulsa un número).', { ancho: 500 });
+      // como en la retrógrada (Iago, 14-oct): «Seguir con la historia» espera a que la invertida se transporte al menos una vez
+      const c = SE.cartelito(cuerpo, 110, 186, '<b>Ahora, transpórtala.</b><br>Gira el dial (o pulsa un número): I0 sube igual que subía P0. Hazlo al menos una vez para poder seguir.', { ancho: 500 });
       conDial(cuerpo, T, 'I', 160, 398, 360, {
         antes: k => { c.quita(); aviso(msg, k == null ? 'Cada número que pasa por la flecha es un <em>semitono</em>: toda la invertida sube (o baja) con él…' : `I${k}: toda la invertida sube, de semitono en semitono…`); },
         explica: k => aviso(msg, `I${k}: la inversión, <em>${semis(k)}</em> más arriba.`),
-        despues: k => aviso(msg, k ? 'Vuelve a I0. Prueba con otro número… o sigue.' : 'En el 0, la invertida se queda como estaba: I0.')
+        despues: k => { aviso(msg, k ? 'Vuelve a I0. Prueba con otro número… o sigue.' : 'En el 0, la invertida se queda como estaba: I0. Gira hasta otro número.'); if (k) bSig.disabled = false; }
       });
     }, { lleno: true });
     const bSig = boton(botones, 'Seguir con la historia', () => ok(), { flecha: true }); bSig.disabled = true;
@@ -3700,11 +3747,46 @@ PARADAS.octava = {
       aviso(msg, 'Son <em>los mismos sonidos</em>, en otra octava, y en el <em>mismo orden</em>: sigue siendo I0. Cambiar de octava no cambia la serie; solo hace que se lea mejor.');
       await suenaPauta(T); bSig.disabled = false; ocupado = false; bMueve.disabled = true;
     }, { lleno: true });
+    // Iago, 14-oct (probándolo en Protester): «justo el momento en el que una nota va a sonar distinta a la que está escrita, que
+    // aparezca también pintada… octavada… animación de ojo, aquí cambió… pero solo ese momento». Mientras suena «Con otras octavas»,
+    // cada nota que suena en otra octava se pinta un instante donde suena de verdad (aparece con un golpe y un aro, con su flecha
+    // y «8ª» desde la escrita) y se va enseguida; la escrita se queda donde estaba.
+    let fants = [];                  // { slot, m, de, t0 }
+    const F_DUR = 560, F_ENTRA = 140, F_SALE = 180;
+    T.extra = (g, q) => {
+      const ahora = performance.now(), s = q.s, col = T.color;
+      fants = fants.filter(f => ahora - f.t0 < F_DUR);
+      fants.forEach(f => {
+        const e = Math.min(1, (ahora - f.t0) / F_ENTRA), alfa = Math.min(e, Math.max(0, (f.t0 + F_DUR - ahora) / F_SALE));
+        const cx = T.xDe(f.slot), cy = T.yDeMidi(f.m), yE = T.yDeMidi(f.de), arriba = f.m > f.de, paso = N.pasoDe(f.m);
+        g.save(); g.globalAlpha = alfa; g.strokeStyle = col; g.fillStyle = col; g.lineWidth = Math.max(1, s * .085);
+        if (paso <= 28) for (let ls = 28; ls >= paso - .5; ls -= 2) { const ly = T.yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
+        if (paso >= 40) for (let ls = 40; ls <= paso + .5; ls += 2) { const ly = T.yDe(ls); g.beginPath(); g.moveTo(cx - s * .95, ly); g.lineTo(cx + s * .95, ly); g.stroke(); }
+        if (N.ESCR[mod12(f.m)][1] === -1) N.bemol(g, cx - s * 1.32, cy, s);
+        // la nota, con un pequeño golpe al aparecer
+        const esc = 1 + .5 * Math.pow(1 - e, 2);
+        g.save(); g.translate(cx, cy); g.scale(esc, esc); g.translate(-cx, -cy); N.redonda(g, cx, cy, s); g.restore();
+        // el aro que se abre (para que el ojo vaya ahí)
+        const ua = Math.min(1, (ahora - f.t0) / 420);
+        g.save(); g.globalAlpha = alfa * (1 - ua) * .85; g.lineWidth = 2.4; g.beginPath(); g.arc(cx, cy, s * (.9 + 1.3 * ua), 0, 2 * Math.PI); g.stroke(); g.restore();
+        // la flecha desde la nota escrita y «8ª»
+        const xf = cx + s * 1.45, y0 = yE + (arriba ? -s * .75 : s * .75), y1 = cy + (arriba ? s * .75 : -s * .75);
+        g.setLineDash([s * .3, s * .22]); g.lineWidth = 2; g.beginPath(); g.moveTo(xf, y0); g.lineTo(xf, y1); g.stroke(); g.setLineDash([]);
+        const dy = arriba ? s * .5 : -s * .5;
+        g.beginPath(); g.moveTo(xf, y1 - dy * .2); g.lineTo(xf - s * .32, y1 + dy); g.lineTo(xf + s * .32, y1 + dy); g.closePath(); g.fill();
+        g.font = `700 ${(s * .78) | 0}px Poppins, "Avenir Next", Helvetica, Arial, sans-serif`; g.textAlign = 'left';
+        g.fillText('8ª', xf + s * .4, (y0 + y1) / 2 + s * .28);
+        g.restore();
+      });
+    };
     boton(botones, '▶ Con otras octavas', async () => {
       if (ocupado) return; ocupado = true; S.despierta();
-      const oct = T.midis().map(() => [-1, 0, 1][Math.floor(Math.random() * 3)]);
-      const t = tocaM(T.midis().map((m, i) => m + 12 * oct[i]), { cada: i => { T.resalta = i; T.pinta(); } }); await espera(t * 1000); T.resalta = -1; T.pinta();
-      aviso(msg, 'Cada nota en una octava al azar… y el <em>orden</em> es el mismo: sigue siendo la misma serie.'); ocupado = false; bSig.disabled = false;
+      // cada nota en una octava al azar (la de arriba, la de abajo o la escrita), sin salirse del papel
+      const ms = T.midis(), oct = ms.map(m => { const v = [-1, 0, 1].filter(k => { const p = N.pasoDe(m + 12 * k); return p >= 18 && p <= 49; }); return v[Math.floor(Math.random() * v.length)]; });
+      let vivo = true; const fr = () => { if (!vivo) return; T.pinta(); requestAnimationFrame(fr); }; requestAnimationFrame(fr);
+      const t = tocaM(ms.map((m, i) => m + 12 * oct[i]), { cada: i => { T.resalta = i; if (oct[i]) fants.push({ slot: i, m: ms[i] + 12 * oct[i], de: ms[i], t0: performance.now() }); } });
+      await espera(t * 1000); await espera(F_DUR - 300); vivo = false; fants = []; T.resalta = -1; T.pinta();
+      aviso(msg, 'Cada nota en una octava al azar (las que cambian se ven un momento donde suenan)… y el <em>orden</em> es el mismo: sigue siendo la misma serie.'); ocupado = false; bSig.disabled = false;
     });
     const bSig = boton(botones, 'Seguir con la historia', () => ok(), { flecha: true }); bSig.disabled = true;
     aviso(msg, `Fíjate en las ${cuales.length > 1 ? 'dos notas en rojo: se salen muchísimo' : 'la nota en rojo: se sale muchísimo'} del pentagrama, con un montón de líneas adicionales. Así cuesta leerla${cuales.length > 1 ? 's' : ''}. Pulsa <em>${cuales.length > 1 ? 'Cambiarlas' : 'Cambiarla'} de octava</em>.`);
