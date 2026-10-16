@@ -9,6 +9,57 @@
      el seleccionador de https://gp.lmathome.es/voluntarios/ (botón «Voluntarios» arriba a la derecha, activo en la hora de clase).
      A los alumnos no les hace nada. Quitarlo de este portal: borrar este bloque (y su regla #bVoluntarios del CSS). -->
 <script>
+/* (16-oct-2026, Claude para Iago) LOS CAPÍTULOS SE ABREN EN CLASE, como los días de La cabaña. Iago: «bloquear cada capítulo
+   hasta verlo en clase». El portal de gp.lmathome.es (la medalla y los avisos «Atonalidad · Capítulo N» de la campana) abre
+   esta página con «#cu=<cuenta>&dias=1.2» (y «&dia=2» desde el aviso de ese capítulo): aquí se quita de la dirección, se
+   guarda en este navegador y la portada solo deja entrar en esos capítulos; el siguiente, con su candado («se abre en
+   clase»). Los capítulos los decide Supabase (suite_hitos_de: lo marcado en el Diario y el final de cada clase). Al alumno,
+   además, ni el panel «Prueba:» ni el «Página de prueba» de la portada.
+   Sin cuenta de alumno guardada (el profe, que entra con su «#c=»; el ordenador de clase; quien llega por la dirección sin
+   más): todo abierto, como hasta hoy. Quitarlo: borrar este bloque (lo demás pregunta por window.AtonHitos). */
+(function () {
+  var K = 'lm_aton_hitos', st = null, ir = 0;
+  var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  try { st = JSON.parse(localStorage.getItem(K) || 'null'); } catch (e) {}
+  try {
+    var ps = (location.hash || '').replace(/^#/, '').split('&'), q = {};
+    ps.forEach(function (p) { var i = p.indexOf('='); if (i > 0) { try { q[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); } catch (e) {} } });
+    if (q.c && UUID.test(q.c)) { st = null; try { localStorage.removeItem(K); } catch (e) {} }          // el profe (cuenta de pruebas): todo abierto
+    else if (q.cu && UUID.test(q.cu)) {
+      var d = String(q.dias || '').split(/[.,]/).map(Number).filter(function (n) { return n >= 1 && n <= 9; });
+      if (d.length) { st = { cuenta: q.cu.toLowerCase(), dias: d, en: new Date().toISOString() }; try { localStorage.setItem(K, JSON.stringify(st)); } catch (e) {} }
+    }
+    if (/^[1-9]$/.test(q.dia || '')) ir = +q.dia;
+    if ('cu' in q || 'dias' in q || 'dia' in q) {
+      var resto = ps.filter(function (p) { return p && !/^(cu|dias|dia)=/.test(p); }).join('&');
+      history.replaceState(history.state, '', location.pathname + location.search + (resto ? '#' + resto : ''));
+    }
+  } catch (e) {}
+  var ab = (st && Array.isArray(st.dias) && st.dias.length) ? st.dias.map(Number) : null;   // null = todo abierto
+  window.AtonHitos = {
+    activo: function () { return !!ab; },
+    abierto: function (n) { n = +n; return !ab || ab.indexOf(n) >= 0; },
+    ir: function () { var n = ir; ir = 0; return n; }       // el capítulo del aviso («&dia=2»), una sola vez
+  };
+  if (ab) {
+    document.documentElement.classList.add('aton-alumno');
+    document.addEventListener('DOMContentLoaded', function () {
+      try { document.title = 'Atonalidad · El museo'; var p = document.querySelector('#portada .pie'); if (p) p.innerHTML = '2.º GP · Unidad 3 · Atonalidad'; } catch (e) {}
+    });
+  }
+})();
+</script>
+<style>
+/* (16-oct-2026) un capítulo que aún no se ha visto en clase: apagado, con su candado y «se abre al acabar la clase…» */
+#portada .pbot .bot.cerrado, #portada .pbot .bot.cerrado:hover { cursor: default; opacity: .8; filter: saturate(.3) brightness(.9); transform: none; }
+#portada .pbot .bot.sombra.cerrado::before, #portada .pbot .bot.sombra.cerrado::after { display: none; }
+#portada .pbot .bot .candado { width: .62em; height: .62em; margin-left: .45em; vertical-align: -.02em; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+#portada .pbot .pCerrado { margin: -6px 0 0; font: 500 22px/1.25 var(--tit); color: rgba(240, 232, 218, .8); text-shadow: 0 1px 8px #000, 0 0 18px rgba(0, 0, 0, .7); letter-spacing: .02em; text-align: center; }
+#portada .pbot .pSeguir { background: none; border: 0; margin-top: -6px; padding: 6px 12px; color: rgba(240, 232, 218, .86); font: 500 22px/1 var(--tit); text-decoration: underline; text-underline-offset: 6px; text-decoration-color: rgba(240, 232, 218, .6); text-shadow: 0 1px 8px #000, 0 0 18px rgba(0, 0, 0, .7); cursor: pointer; }
+#portada .pbot .pSeguir:hover { color: #fff; text-decoration-color: rgba(255, 255, 255, .6); }
+.aton-alumno #portada .prueba { display: none !important; }
+</style>
+<script>
 window.LM_VOL_CONFIG = function () {
   return {
       portal: 'atonalidad', tema: 'museo',
@@ -1705,6 +1756,11 @@ async function carga(cap) {
 }
 
 /* ───────── portada ───────── */
+/* (16-oct-2026, Iago: «bloquear cada capítulo hasta verlo en clase») qué capítulos puede abrir el alumno: window.AtonHitos, en la
+   cabecera (sin él, o sin cuenta de alumno guardada, todo abierto como siempre) */
+function capAbierto(id) { try { return !window.AtonHitos || window.AtonHitos.abierto(+String(id).replace(/\D/g, '')); } catch (e) { return true; } }
+function alumno() { try { return !!(window.AtonHitos && window.AtonHitos.activo()); } catch (e) { return false; } }
+const CANDADO = '<svg class="candado" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 const Portada = {
   el: $('#portada'), sonando: false,
   muestra() {
@@ -1720,10 +1776,26 @@ const Portada = {
     // de noche, ATONALIDAD ya va pintada en el tejado de la lámina (Iago, 10-oct): la página no pinta nada encima
     const b = $('.pbot', el); b.innerHTML = '';
     // en el centro, solo el capítulo que toca (Iago, 11-oct: «ni Bajar ni nada: Capítulo 1, Capítulo 2, Capítulo 3»)
-    const toca = !hechos.c1 ? 'c1' : !hechos.c2 ? 'c2' : !hechos.c3 ? 'c3' : 'c1';
+    let toca = !hechos.c1 ? 'c1' : !hechos.c2 ? 'c2' : !hechos.c3 ? 'c3' : 'c1';
+    // (16-oct-2026) al alumno, solo lo ya visto en clase: si el que toca aún no se ha visto, el primero sin hacer que ya esté
+    // abierto; si no queda ninguno, el que toca, apagado y con su candado
+    if (!capAbierto(toca)) { const otro = ['c1', 'c2', 'c3'].find(c => !hechos[c] && capAbierto(c)); if (otro) toca = otro; }
     const f1 = crea('div', 'fila', null, b);
-    if (!noche) boton(f1, 'Entrar', () => this.empieza('c1'), { clase: 'placa' });          // de día, la placa de latón (Iago, 11-oct)
+    if (!capAbierto(toca)) {
+      const x = boton(f1, 'Capítulo ' + toca.slice(1) + CANDADO, () => {}, { clase: (noche ? 'sombra' : 'placa') + ' cerrado' });
+      x.disabled = true; x.title = 'Se abre al acabar la clase en la que lo veamos';
+      crea('p', 'pCerrado', 'Se abre al acabar la clase en la que lo veamos', b);
+    }
+    else if (!noche) boton(f1, 'Entrar', () => this.empieza(toca), { clase: 'placa' });          // de día, la placa de latón (Iago, 11-oct)
     else boton(f1, 'Capítulo ' + toca.slice(1), () => this.empieza(toca), { clase: 'sombra' });          // de noche, sombrío, con el borde de pintura (Iago, 11-oct)
+    // (16-oct-2026, Iago) al alumno (no ve el panel «Prueba:»), «Seguir donde lo dejaste» si salió a mitad de un capítulo abierto
+    if (alumno()) {
+      const dd = lee('donde', null), cd = dd && D.historia.find(c => c.id === dd.cap), k = cd ? cd.escenas.findIndex(e => e.num === dd.esc) : -1;
+      if (cd && !hechos[dd.cap] && capAbierto(dd.cap) && k > 0) {
+        const y = crea('button', 'pSeguir', 'Seguir donde lo dejaste', b); y.type = 'button';
+        y.title = cd.corto + ' · ' + cd.escenas[k].titulo; y.onclick = () => { S.despierta(); this.empieza(dd.cap, dd.esc); };
+      }
+    }
     // para probar (abajo a la derecha): cualquier capítulo, cualquier escena, o seguir donde se quedó
     // (en la página publicada no se pueden usar los ?cap=…&desde=… de la dirección: por eso va aquí. Iago, 11-oct)
     const pr = $('.prueba', el); pr.innerHTML = 'Prueba:';
@@ -1746,6 +1818,7 @@ const Portada = {
     }
   },
   async empieza(id, desdeEsc) {
+    if (!capAbierto(id)) { vuelvePortada(); return; }       /* (16-oct-2026) un capítulo que aún no se ha visto en clase */
     S.despierta();
     const cap = D.historia.find(c => c.id === id);
     const desde = desdeEsc || (PARAMS.get('desde') && PARAMS.get('cap') === id ? PARAMS.get('desde') : null);
@@ -1766,6 +1839,10 @@ Object.assign(H, { D, RAIZ, pideImg, urlImg, esc, $, $$, crea, S, ESPACIOS, espa
 addEventListener('load', () => {
   Portada.muestra();
   if (PARAMS.get('cap')) Portada.empieza(PARAMS.get('cap'));
+  else {   /* (16-oct-2026) desde el aviso «Atonalidad · Capítulo N» de la campana: directo a ese capítulo */
+    const dl = (() => { try { return window.AtonHitos ? window.AtonHitos.ir() : 0; } catch (e) { return 0; } })();
+    if (dl >= 1 && dl <= 3 && capAbierto('c' + dl)) Portada.empieza('c' + dl);
+  }
   if (PARAMS.get('parada')) {        // para probar una parada suelta: ?parada=gramofono
     const id = PARAMS.get('parada'); Portada.el.style.display = 'none'; esc.classList.add('historia');
     if (PARAMS.get('noche')) esc.classList.add('noche'); if (PARAMS.get('frio')) esc.classList.add('frio');
@@ -2632,11 +2709,16 @@ EFECTOS.portadaNoche = async function (o = {}) {
   // ATONALIDAD ya va pintada en el tejado de la lámina (la hizo ChatGPT a petición de Iago, 10-oct): la página no pinta nada encima
   await espera(2600);
   // Iago, 11-oct noche: «fin del capítulo 1 quiero que aparezca en el centro y que se oscurezca un poco el fondo… que sea protagonista»
-  const fin = EFECTOS.finDe('Fin del capítulo ' + cap, o.sub ? { sub: o.sub } : {});
+  // (16-oct-2026) si el capítulo siguiente aún no se ha visto en clase (window.AtonHitos), el «Fin del capítulo…» lo dice y se vuelve a la portada
+  const sigAb = (() => { try { return !window.AtonHitos || window.AtonHitos.abierto(cap + 1); } catch (e) { return true; } })();
+  const subFin = sigAb ? o.sub : (o.sub ? o.sub + '<br>' : '') + 'El capítulo ' + (cap + 1) + ' se abrirá cuando lo veamos en clase.';
+  const fin = EFECTOS.finDe('Fin del capítulo ' + cap, subFin ? { sub: subFin } : {});
   await espera(2200);
   const hechos = H.lee('hechos', {}); hechos['c' + cap] = true; H.guarda('hechos', hechos);
-  await H.seguir('Capítulo ' + (cap + 1), { centro: true });          // Iago, 11-oct: ni «Bajar» ni nada: «Capítulo 1», «Capítulo 2», «Capítulo 3»
-  H.alTerminar = 'c' + (cap + 1);
+  if (sigAb) {
+    await H.seguir('Capítulo ' + (cap + 1), { centro: true });          // Iago, 11-oct: ni «Bajar» ni nada: «Capítulo 1», «Capítulo 2», «Capítulo 3»
+    H.alTerminar = 'c' + (cap + 1);
+  } else await H.seguir('Volver a la portada', { centro: true });
   fin.quita(500);
 };
 
