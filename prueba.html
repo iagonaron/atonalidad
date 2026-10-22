@@ -63,6 +63,8 @@
 window.LM_VOL_CONFIG = function () {
   return {
       portal: 'atonalidad', tema: 'museo',
+      // (22-oct-2026, v5) una animación por capítulo: el 1, el cordón del museo; el 2, el dado; el 3, la rueda del candado
+      temaDe: function () { try { var m = /Cap[ií]tulo\s*(\d)/i.exec((document.querySelector('#carga .ceja') || {}).textContent || ''); return m ? ({ 1: 'cordon', 2: 'dado' })[m[1]] || 'museo' : 'museo'; } catch (x) { return 'museo'; } },
       boton: { padre: '#mandos', antes: '#bPausa', clase: 'bot', id: 'bVoluntarios' },
       sonidos: { tic: ['atonalidad/aud/sfx/candado_tic_1.mp3', 'atonalidad/aud/sfx/candado_tic_2.mp3', 'atonalidad/aud/sfx/candado_tic_3.mp3'],
                  encaja: 'atonalidad/aud/sfx/candado_encaja.mp3', abre: 'atonalidad/aud/sfx/candado_abre.mp3' },
