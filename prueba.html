@@ -1021,7 +1021,7 @@ const S = {
       for (let i = 0; i < n; i++) { const t = i / C.sampleRate; lp += (Math.random() * 2 - 1 - lp) * brillo; d[i] = lp * Math.exp(-6.9 * t / seg) * (t < .012 ? t / .012 : 1); } }
     return b;
   },
-  despierta() { this.crea(); if (this.ctx.state === 'suspended' && !Reloj.pausa) this.ctx.resume(); },
+  despierta() { this.crea(); if (this.ctx.state !== 'running' && this.ctx.state !== 'closed' && !Reloj.pausa) this.ctx.resume(); },   // (27-oct-2026) también «interrupted» (iPad)
   // lo que tarda el sonido en salir por los altavoces o los auriculares (con unos AirPods, a veces 0,2 s): los dibujos que
   // siguen a la música lo descuentan, para que no vayan por delante de lo que se oye (Iago, 11-oct, con el medidor de Wagner)
   lat() { const c = this.ctx; return Math.min(.4, (c.outputLatency || 0) + (c.baseLatency || 0)); },
@@ -3014,7 +3014,9 @@ PARADAS.asi_wagner = {
     function tensionEn(t) { const r = TENSION; if (t <= r[0][0]) return r[0][1]; for (let i = 1; i < r.length; i++) if (t < r[i][0]) { const a = r[i - 1], b = r[i]; return a[1] + (b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); } return r[r.length - 1][1]; }
     const mezcla = (a, b, f) => a.map((x, k) => Math.round(x + (b[k] - x) * f));
     function pinta() {
-      const t = t0 == null ? 0 : S.ahora() - t0;          // lo que se OYE ahora (sin la latencia de los auriculares)
+      // lo que se OYE ahora (sin la latencia de los auriculares). (27-oct-2026, en clase se quedó quieto: ni música ni animación) si el
+      // reloj del audio no avanza, la animación sigue con el de la pared, 1,5 s por detrás, para que nunca se quede parada
+      const t = t0 == null ? 0 : Math.max(S.ahora() - t0, (performance.now() - tPared) / 1000 - 1.5);
       ctx.clearRect(0, 0, 1360, 560);
       const x0 = 90, ancho = 1240, px = ancho / ventana, desde = t - 3;
       ctx.font = '500 17px Poppins'; ctx.textAlign = 'right';
@@ -3049,6 +3051,9 @@ PARADAS.asi_wagner = {
     // no se encendía nunca. Ahora: se vuelve a pedir (motor.js), y si en 12 s no ha llegado o falla, se puede seguir igualmente
     const sinAudio = txt => { if (!vivo) return; bEsc.disabled = false; bSig.disabled = false; msg.innerHTML = txt; };
     const bEsc = boton(botones, '▶ Escuchar', async () => {
+      // (27-oct-2026) «Escuchar» es una orden explícita: si la historia estaba en pausa (p. ej. tras la ruleta de voluntarios), se quita, y
+      // el audio se despierta aquí mismo, dentro del toque (en el iPad, fuera del toque ya no se puede)
+      try { if (H.Reloj && H.Reloj.pausa && H.pausa) H.pausa(false); if (S.ctx && S.ctx.state !== 'running') S.ctx.resume(); } catch (x) {}
       if (h) h.para(.2);
       bEsc.disabled = true; msg.innerHTML = 'Un momento…';
       const vigia = setTimeout(() => { if (t0 == null) sinAudio('El audio no llega (¿la conexión?). Prueba otra vez… o sigue con la historia.'); }, 12000);
@@ -3057,6 +3062,8 @@ PARADAS.asi_wagner = {
       clearTimeout(vigia); S.despierta();
       h = S.uno('aud/tristan.mp3', { bus: 'par', gan: 1 });
       t0 = S.ctx.currentTime + .05; tPared = performance.now() + 50; vMed = .12; tPrev = null; msg.innerHTML = 'Fíjate en el medidor de tensión…'; bEsc.disabled = true;
+      const ct = S.ctx.currentTime;   // (27-oct-2026) si a los 2 s el audio no ha avanzado: aviso, y se puede volver a escuchar o seguir
+      setTimeout(() => { if (vivo && t0 != null && S.ctx.currentTime - ct < .5) { bEsc.disabled = false; bSig.disabled = false; msg.innerHTML = 'No se oye nada: pulsa <em>▶ Escuchar</em> otra vez… o sigue con la historia.'; } }, 2000);
     }, { lleno: true });
     const bSig = boton(botones, 'Seguir con la historia', () => { vivo = false; if (h) h.para(.6); ok(); }, { flecha: true }); bSig.disabled = true;
     function terminado() { bEsc.disabled = false; bEsc.querySelector('span').textContent = '▶ Otra vez'; bSig.disabled = false;
