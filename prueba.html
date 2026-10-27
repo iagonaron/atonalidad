@@ -1782,7 +1782,10 @@ const CANDADO = '<svg class="candado" viewBox="0 0 24 24" aria-hidden="true"><re
 const Portada = {
   el: $('#portada'), sonando: false,
   muestra() {
-    const hechos = lee('hechos', {});
+    // (27-oct-2026, Iago) con la cuenta del profe (Protester/Tester), la portada empieza SIEMPRE por el Capítulo 1, de día: el iPad del
+    // aula recordaba lo que hizo el primer grupo y el segundo vio la casa de noche (spoiler). Para ir a otro capítulo: «Prueba:», abajo
+    // a la derecha. Al alumno, como siempre: su portada sigue lo que él ya ha hecho.
+    const hechos = alumno() ? lee('hechos', {}) : {};
     const noche = !!(hechos.c1 || hechos.c2 || hechos.c3);
     const el = this.el; el.hidden = false; el.style.display = 'flex';
     const f = $('.pfondo', el); f.innerHTML = '';
