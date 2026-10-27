@@ -446,6 +446,9 @@ canvas.frag.parpadea { animation: fragParpadea .9s ease-in-out infinite; }
   font: italic 400 36px/1.4 var(--txt); box-shadow: 0 16px 50px rgba(0, 0, 0, .5), inset 0 2px 10px rgba(120, 80, 30, .18); }
 #parada textarea.definicion::placeholder { color: rgba(90, 62, 30, .5); }
 #parada textarea.definicion:focus { border-color: #e2b868; }
+/* (27-oct-2026) #escena lleva «user-select: none» (para que tocar la escena no seleccione nada); en el iPad eso también impedía entrar en
+   el cuadro de texto tocándolo, y no salía el teclado. Los cuadros de texto sí se pueden seleccionar. */
+#escena textarea, #escena input[type=text] { user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
 
 /* el dial de la caja fuerte (3.5–3.7): cada número con su aro, como un botón, y la rueda se puede coger y girar
    (Iago, 11-oct noche, Froiz 11: «como un teléfono antiguo… y que cada número tenga un contorno de círculo, como un botón») */
@@ -2909,7 +2912,11 @@ PARADAS.pausa_clase = {
     caja.placeholder = 'Escribe aquí tu definición…'; caja.rows = 3; caja.spellcheck = false;
     const bCont = boton(botones, 'Continuar', ok, { lleno: true, flecha: true }); bCont.disabled = true;
     caja.addEventListener('input', () => { bCont.disabled = caja.value.trim().length < 3; });
-    setTimeout(() => caja.focus(), 600);
+    // (27-oct-2026) En pantallas táctiles el foco automático no saca el teclado (solo lo saca un toque), así que allí se entra en el
+    // cuadro tocándolo, y el toque le da el foco de forma explícita. Con ratón y teclado, como antes: el cursor ya está dentro.
+    const tactil = (navigator.maxTouchPoints || 0) > 0 || matchMedia('(pointer: coarse)').matches;
+    if (!tactil) setTimeout(() => caja.focus(), 600);
+    caja.addEventListener('touchend', () => { if (document.activeElement !== caja) caja.focus(); });
   })
 };
 
