@@ -9,6 +9,21 @@
      el seleccionador de https://gp.lmathome.es/voluntarios/ (botón «Voluntarios» arriba a la derecha, activo en la hora de clase).
      A los alumnos no les hace nada. Quitarlo de este portal: borrar este bloque (y su regla #bVoluntarios del CSS). -->
 <script>
+/* (27-oct-2026) En el iPad con Safari antiguo (iPadOS 15) el lienzo no tiene roundRect: el Wagner se caía al dibujar la primera nota
+   y la parada se quedaba sin botones (ni música ni animación). Si falta, se añade aquí: rectángulo con las esquinas redondeadas. */
+if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Array.isArray(r) ? (+r[0] || 0) : (typeof r === 'object' && r ? (+r.x || 0) : (+r || 0));
+    if (w < 0) { x += w; w = -w; } if (h < 0) { y += h; h = -h; }
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    this.moveTo(x + r, y); this.lineTo(x + w - r, y); this.arcTo(x + w, y, x + w, y + r, r);
+    this.lineTo(x + w, y + h - r); this.arcTo(x + w, y + h, x + w - r, y + h, r);
+    this.lineTo(x + r, y + h); this.arcTo(x, y + h, x, y + h - r, r);
+    this.lineTo(x, y + r); this.arcTo(x, y, x + r, y, r); this.closePath();
+  };
+}
+</script>
+<script>
 /* (16-oct-2026, Claude para Iago) LOS CAPÍTULOS SE ABREN EN CLASE, como los días de La cabaña. Iago: «bloquear cada capítulo
    hasta verlo en clase». El portal de gp.lmathome.es (la medalla y los avisos «Atonalidad · Capítulo N» de la campana) abre
    esta página con «#cu=<cuenta>&dias=1.2» (y «&dia=2» desde el aviso de ese capítulo): aquí se quita de la dirección, se
@@ -1329,13 +1344,11 @@ const Dialogo = {
       $('.quien', el).innerHTML = quien + (o.nota ? `<small>${o.nota}</small>` : '');
       t.innerHTML = html; $('.provisional', el).hidden = !!o.grabada;
     };
-    if (this.visible && clase !== this.clase) {
-      el.classList.remove('ve');
-      setTimeout(() => { if (ficha !== this.ficha) return; el.className = clase; rellena(); t.style.opacity = 1;
-        requestAnimationFrame(() => { if (ficha === this.ficha) el.classList.add('ve'); }); }, 260);
-    } else if (this.visible) {
-      t.style.opacity = 0;
-      setTimeout(() => { if (ficha !== this.ficha) return; rellena(); t.style.opacity = 1; }, 170);
+    // (27-oct-2026, Iago: «algunos diálogos tenían glitch: el texto aparecía y desaparecía») el texto ya no se desvanece entre frases
+    // ni el cuadro se va y vuelve: si cambia quién habla, el cuadro cambia de lado y de color y el texto nuevo entra a la vez, en el
+    // mismo fotograma (así tampoco asoma el viejo con el color nuevo).
+    if (this.visible) {
+      el.className = clase + ' ve'; rellena(); t.style.opacity = 1;
     } else {
       el.className = clase; rellena(); t.style.opacity = 1;
       requestAnimationFrame(() => { if (ficha === this.ficha) el.classList.add('ve'); });
@@ -3013,7 +3026,13 @@ PARADAS.asi_wagner = {
     let t0 = null, h = null, vMed = .12, tPrev = null, tPared = 0;
     function tensionEn(t) { const r = TENSION; if (t <= r[0][0]) return r[0][1]; for (let i = 1; i < r.length; i++) if (t < r[i][0]) { const a = r[i - 1], b = r[i]; return a[1] + (b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); } return r[r.length - 1][1]; }
     const mezcla = (a, b, f) => a.map((x, k) => Math.round(x + (b[k] - x) * f));
+    // (27-oct-2026) si un fotograma falla al dibujar, la parada sigue: el bucle continúa y el final por el reloj de la pared también
     function pinta() {
+      try { pinta0(); } catch (e) { if (!pinta.err) { pinta.err = 1; console.warn('Wagner: dibujo', e); } }
+      if (t0 != null && performance.now() - tPared > (W.duracion_s + 4) * 1000) { t0 = null; terminado(); }
+      if (vivo) requestAnimationFrame(pinta);
+    }
+    function pinta0() {
       // lo que se OYE ahora (sin la latencia de los auriculares). (27-oct-2026, en clase se quedó quieto: ni música ni animación) si el
       // reloj del audio no avanza, la animación sigue con el de la pared, 1,5 s por detrás, para que nunca se quede parada
       const t = t0 == null ? 0 : Math.max(S.ahora() - t0, (performance.now() - tPared) / 1000 - 1.5);
@@ -3043,7 +3062,6 @@ PARADAS.asi_wagner = {
       relleno.style.height = (v * 100) + '%'; relleno.style.background = `linear-gradient(rgb(${c1}), rgb(${c2}))`; raya.style.bottom = `calc(${v * 100}% - 2px)`;
       // el final, por el reloj del audio… o por el de la pared, si el audio no avanza (contexto de audio parado)
       if (t0 != null && (t > W.duracion_s + .3 || performance.now() - tPared > (W.duracion_s + 4) * 1000)) { t0 = null; terminado(); }
-      if (vivo) requestAnimationFrame(pinta);
     }
     let vivo = true; pinta();
     // Iago, 14-oct por la tarde (probándolo con Antonio): «el Wagner, Tristán e Isolda se quedó bugueado… bloqueado». Esa tarde la
