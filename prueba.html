@@ -4630,6 +4630,22 @@ PARADAS.libreta = {
 })();
 
 </script>
+<script>/* (5-nov-2026, Iago) «en grado profesional, que mi notificación venga con la textura del propio portal»: el museo le dice al latido
+   en qué capítulo está (data-lm-ejercicio en <html>: «cap-N», «cap-N-carga» en la pantalla de carga, «portada» fuera), y la campana
+   del Diario pinta cada rato con la textura de su capítulo. Solo lee; no cambia nada del museo. Para quitarlo: borrar este bloque. */
+(function () {
+  function marca() {
+    try {
+      var H = window.AT, c = (H && H.cap) ? String(H.cap.id || '').replace(/\D/g, '') : '';
+      var carga = document.getElementById('carga'), esc = document.getElementById('escena'), v = 'portada';
+      if (c && carga && carga.classList.contains('ve')) v = 'cap-' + c + '-carga';
+      else if (c && esc && esc.classList.contains('historia')) v = 'cap-' + c;
+      if (document.documentElement.getAttribute('data-lm-ejercicio') !== v) document.documentElement.setAttribute('data-lm-ejercicio', v);
+    } catch (e) {}
+  }
+  marca(); setInterval(marca, 1500);
+})();
+</script>
 <script src="https://ge.lmathome.es/piel/latido.js?v=1" defer></script><!-- (15-oct-2026, Iago) trabajo por libre: el latido para la campana del Diario. Para quitarlo: borrar esta línea -->
 </body>
 </html>
