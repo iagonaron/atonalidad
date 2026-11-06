@@ -33,13 +33,13 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
    Sin cuenta de alumno guardada (el profe, que entra con su «#c=»; el ordenador de clase; quien llega por la dirección sin
    más): todo abierto, como hasta hoy. Quitarlo: borrar este bloque (lo demás pregunta por window.AtonHitos). */
 (function () {
-  var K = 'lm_aton_hitos', st = null, ir = 0;
+  var K = 'lm_aton_hitos', st = null, ir = 0, profe = false;
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   try { st = JSON.parse(localStorage.getItem(K) || 'null'); } catch (e) {}
   try {
     var ps = (location.hash || '').replace(/^#/, '').split('&'), q = {};
     ps.forEach(function (p) { var i = p.indexOf('='); if (i > 0) { try { q[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); } catch (e) {} } });
-    if (q.c && UUID.test(q.c)) { st = null; try { localStorage.removeItem(K); } catch (e) {} }          // el profe (cuenta de pruebas): todo abierto
+    if (q.c && UUID.test(q.c)) { st = null; profe = true; try { localStorage.removeItem(K); } catch (e) {} }          // el profe (cuenta de pruebas): todo abierto
     else if (q.cu && UUID.test(q.cu)) {
       var d = String(q.dias || '').split(/[.,]/).map(Number).filter(function (n) { return n >= 1 && n <= 9; });
       if (d.length) { st = { cuenta: q.cu.toLowerCase(), dias: d, en: new Date().toISOString() }; try { localStorage.setItem(K, JSON.stringify(st)); } catch (e) {} }
@@ -50,7 +50,13 @@ if (window.CanvasRenderingContext2D && !CanvasRenderingContext2D.prototype.round
       history.replaceState(history.state, '', location.pathname + location.search + (resto ? '#' + resto : ''));
     }
   } catch (e) {}
-  var ab = (st && Array.isArray(st.dias) && st.dias.length) ? st.dias.map(Number) : null;   // null = todo abierto
+  /* (6-nov-2026, Iago: «está bien que esté cerrado… quiero que mis alumnos puedan entrar con su cuenta, pero solo cuando esté
+     habilitado») sin cuenta de alumno guardada y sin ser el profe, ya NO está todo abierto: solo el capítulo 1 (antes, quien abría la
+     dirección a pelo lo tenía todo). El profe sigue con todo abierto: entra por Protester («#c=», también desde la pantalla del
+     aula) y este navegador lo recuerda (lm_vol_cuenta, la del seleccionador de voluntarios). Como el Blues y el Magnetófono.
+     Deshacer: volver a «: null» al final de la línea «var ab» de abajo (y quitar la línea «if (!profe…»). */
+  if (!profe && !st) { try { profe = UUID.test(localStorage.getItem('lm_vol_cuenta') || ''); } catch (e) {} }
+  var ab = profe ? null : (st && Array.isArray(st.dias) && st.dias.length) ? st.dias.map(Number) : [1];   // null = todo abierto
   window.AtonHitos = {
     activo: function () { return !!ab; },
     abierto: function (n) { n = +n; return !ab || ab.indexOf(n) >= 0; },
