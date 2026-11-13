@@ -4652,6 +4652,78 @@ PARADAS.libreta = {
   marca(); setInterval(marca, 1500);
 })();
 </script>
+<script>/* (13-nov-2026, Iago · «Qué suma v2», C1) «cada capítulo cuenta al llegar al 75 %»: el museo le dice al latido cuánto lleva hecho del capítulo
+   (data-lm-progreso, 0–1, en <html> junto a data-lm-ejercicio; el latido lo manda a la campana cada 5 s). Se mide por PASOS REALMENTE RECORRIDOS:
+   cada paso de cada escena pesa más o menos lo que dura (frase ≈5 s, espera = sus segundos, parada/actividad ≈45 s, etc.) y cuenta al pasar de él,
+   en orden y desde donde se entró (entrar por «Ir a la escena…» NO da por vistas las anteriores). Al aparecer «Fin del capítulo…» / «Fin de la visita»
+   llega a 1. Nunca baja (se guarda en este navegador, atonalidad.lm_vistos). Portada y pantalla de carga: sin atributo. Solo lee window.AT; no cambia
+   nada más. Quitarlo: borrar este bloque. */
+(function () {
+  var CLAVE = 'atonalidad.lm_vistos', V = null, ult = null; /* ult: {cap, g} del último tic de este recorrido */
+  function cargar() { if (V) return V; try { V = JSON.parse(localStorage.getItem(CLAVE) || '{}') || {}; } catch (e) { V = {}; } return V; }
+  function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(V)); } catch (e) {} }
+  function peso(p) {
+    switch (p[0]) {
+      case 'W': return +p[1] || 0;
+      case 'A': case 'Y': return 5;
+      case 'P': return 45;
+      case 'X': return 6;
+      case 'FONDO': return 4;
+      case 'VELO': return 2;
+      case 'ROT': return 4;
+      case 'SIGUE': return 2;
+      default: return 0.3;
+    }
+  }
+  /* mapa del capítulo: base de cada escena, peso de cada paso y total (se calcula una vez por capítulo) */
+  function mapa(cap) {
+    if (cap.__lmMapa) return cap.__lmMapa;
+    var g = 0, base = {}, w = [];
+    cap.escenas.forEach(function (e, k) {
+      base[e.num] = g; w.push(3); g++;                     /* g: la «llegada» a la escena (el sitio nuevo, 3 s) */
+      (e.pasos || []).forEach(function (p) { w.push(peso(p)); g++; });
+    });
+    var tot = w.reduce(function (a, x) { return a + x; }, 0) || 1;
+    return (cap.__lmMapa = { base: base, w: w, tot: tot });
+  }
+  /* dónde está ahora (índice global de paso) o -1 si aún no se sabe (H.escena puede ser de un recorrido anterior) */
+  function donde(H, cap) {
+    var idx = -1, k;
+    for (k = 0; k < cap.escenas.length; k++) if (cap.escenas[k].num === H.escena) { idx = k; break; }
+    if (idx < 0) return -1;
+    var e = cap.escenas[idx], ultima = idx === cap.escenas.length - 1, m = mapa(cap);
+    if (ultima ? H.pasoSig == null : H.escenaSig !== cap.escenas[idx + 1]) return -1;
+    var enPasos = H.pasoSig != null;
+    if (!enPasos) return m.base[e.num];                    /* llegando a la escena, aún sin pasos */
+    return m.base[e.num] + 1 + Math.max(0, e.pasos.length - 1 - H.pasoSig.length);
+  }
+  function suma(cap, r) { var m = mapa(cap), s = 0; (r.d || []).forEach(function (g) { s += m.w[g] || 0; }); return Math.min(1, s / m.tot); }
+  function tic(H, doc) {
+    try {
+      var h = doc.documentElement, esc = doc.getElementById('escena'), carga = doc.getElementById('carga');
+      var cap = H && H.cap, enCarga = carga && carga.classList.contains('ve');
+      if (!cap || !cap.escenas || enCarga || !esc || !esc.classList.contains('historia')) {
+        ult = null; if (h.hasAttribute('data-lm-progreso')) h.removeAttribute('data-lm-progreso'); return;
+      }
+      var S = cargar(), r = S[cap.id] || (S[cap.id] = { d: [], f: 0 }), cambio = false;
+      var fin = !!doc.querySelector('#rotulos .finCap');
+      if (fin && !r.f) { r.f = 1; cambio = true; }
+      var g = fin ? -1 : donde(H, cap);
+      if (g >= 0) {
+        if (!ult || ult.cap !== cap.id || g < ult.g) ult = { cap: cap.id, g: g };      /* recorrido nuevo (o vuelta atrás): se cuenta desde aquí */
+        for (var j = ult.g; j < g; j++) if (r.d.indexOf(j) < 0) { r.d.push(j); cambio = true; }
+        ult.g = g;
+      }
+      if (cambio) guardar();
+      var a = (r.f ? 1 : suma(cap, r)).toFixed(3);
+      if (h.getAttribute('data-lm-progreso') !== a) h.setAttribute('data-lm-progreso', a);
+    } catch (e) {}
+  }
+  setInterval(function () { tic(window.AT, document); }, 1000);
+  window.__atonProgreso = function () { var H = window.AT; return H && H.cap && cargar()[H.cap.id] ? (cargar()[H.cap.id].f ? 1 : suma(H.cap, cargar()[H.cap.id])) : 0; };
+  window.__atonTic = function () { tic(window.AT, document); };
+})();
+</script>
 <script src="https://ge.lmathome.es/piel/latido.js?v=1" defer></script><!-- (15-oct-2026, Iago) trabajo por libre: el latido para la campana del Diario. Para quitarlo: borrar esta línea -->
 </body>
 </html>
